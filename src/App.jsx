@@ -1,3 +1,4 @@
+import { PHARMA_FORMULAS, PharmaPanel } from "./pharma.jsx";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // ─── Currency (all base costs stored in INR) ───────────────────────────────
@@ -59,6 +60,7 @@ const CATEGORIES = [
   { id:"inks",      label:"Inks",        icon:"🖨️", color:"#06b6d4" },
   { id:"sizing",    label:"Sizing Agents",icon:"🧵", color:"#84cc16" },
   { id:"chemeng",   label:"ChemEng Pro", icon:"⚗️", color:"#fb923c", enterprise:true },
+  { id:"pharma",    label:"Pharma API",       icon:"💊", color:"#e879f9", paid:true },
   { id:"request",   label:"+ Request Formula", icon:"📩", color:"#f59e0b", special:true },
 ];
 
@@ -1065,6 +1067,8 @@ const FORMULAS = {
       process:"CMC and MHEC dissolved sequentially in hot water (80 °C) to form a stable viscous solution. Lubricant and antistatic added at 60 °C. Applied on sizing machine. Offers excellent film formation with easy desizing (water soluble). Contact us for Process Flow Diagram.",
       equipment:["SS dissolution tank","Sizing machine","Viscometer","Film strength tester"] },
   ],
+
+  pharma: PHARMA_FORMULAS,
 
   chemeng:[
     { id:"ce1", name:"PVAc Emulsion (Homopolymer, Semi-batch)", sub:"Batch emulsion polymerisation, adhesive/paint binder", score:94, tags:["PVAc","emulsion polymerisation"], free:false,
@@ -2089,6 +2093,151 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
   );
 }
 
+
+// ─── Pharma Panel ─────────────────────────────────────────────────────────────
+function PharmaPanel({planKey, currency, onUpgrade}){
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState("All");
+  const isPaid = planKey==="pro"||planKey==="enterprise"||planKey==="starter";
+
+  const compounds = FORMULAS.pharma||[];
+  const categories = ["All","ANTIVIRAL","ANTICANCER","CARDIOVASCULAR","CNS / NEUROLOGICAL","ANTIBIOTIC / ANTIMICROBIAL","ANTI-INFLAMMATORY / ANALGESIC","RESPIRATORY","DIABETES / METABOLIC","DERMATOLOGY","HORMONAL / ENDOCRINE","ANTIHISTAMINE / ALLERGY","GI / GASTROENTEROLOGY","LIPID LOWERING","UROLOGY","BONE / OSTEOPOROSIS","MIGRAINE","VITAMINS / SUPPLEMENTS"];
+
+  const filtered = compounds.filter(f=>{
+    const matchSearch = !search || f.name.toLowerCase().includes(search.toLowerCase());
+    const matchCat = filter==="All" || f.tags.includes(filter);
+    return matchSearch && matchCat;
+  });
+
+  const handleSelect = (f) => {
+    if(!isPaid && !f.free){ onUpgrade("Pharma API Formulations (Starter+)"); return; }
+    setSelected(f);
+  };
+
+  const handleRequestQuote = () => {
+    alert("Quote request sent! Our pharmaceutical team will contact you within 24 hours with the complete technical package including synthesis route, specifications, and regulatory documentation.");
+  };
+
+  return(
+    <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
+      {/* Left list */}
+      <div style={{width:260,borderRight:"1px solid #1e293b",overflowY:"auto",padding:10,flexShrink:0,display:"flex",flexDirection:"column"}}>
+        <div style={{color:"#e879f9",fontWeight:800,fontSize:12,marginBottom:2}}>💊 Pharma API</div>
+        <div style={{color:"#475569",fontSize:9,marginBottom:8}}>{compounds.length} Active Pharmaceutical Ingredients</div>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search API..."
+          style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:11,outline:"none",marginBottom:8}}/>
+        <select value={filter} onChange={e=>setFilter(e.target.value)}
+          style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:filter==="All"?"#64748b":"#e879f9",fontSize:10,outline:"none",marginBottom:8}}>
+          {categories.map(c=><option key={c} value={c}>{c}</option>)}
+        </select>
+        {!isPaid&&(
+          <div style={{background:"#e879f911",border:"1px solid #e879f922",borderRadius:7,padding:"6px 9px",marginBottom:8,fontSize:10,color:"#64748b"}}>
+            🔒 {compounds.filter(f=>!f.free).length} compounds locked · <span onClick={()=>onUpgrade("Pharma API Library")} style={{color:"#e879f9",cursor:"pointer",fontWeight:700}}>Unlock all</span>
+          </div>
+        )}
+        <div style={{flex:1,overflowY:"auto"}}>
+          {filtered.map(f=>{
+            const locked=!isPaid&&!f.free;
+            return(
+              <div key={f.id} onClick={()=>handleSelect(f)} style={{background:selected?.id===f.id?"#1a0a2e":"#0a0f1e",border:`1px solid ${selected?.id===f.id?"#e879f9":"#1e293b"}`,borderRadius:10,padding:"9px 10px",cursor:"pointer",marginBottom:5,opacity:locked?0.5:1,transition:"all 0.2s"}}>
+                <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:2}}>{locked?"🔒 ":""}{f.name}</div>
+                <div style={{color:"#475569",fontSize:9,lineHeight:1.3}}>{f.sub}</div>
+                <div style={{display:"flex",gap:4,marginTop:4,flexWrap:"wrap"}}>
+                  {f.tags.slice(0,1).map(t=><span key={t} style={{background:"#e879f922",color:"#e879f9",border:"1px solid #e879f944",borderRadius:99,fontSize:8,fontWeight:700,padding:"1px 6px",letterSpacing:"0.05em",textTransform:"uppercase"}}>{t}</span>)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Right detail */}
+      <div style={{flex:1,overflowY:"auto",padding:20}}>
+        {!selected&&(
+          <div style={{textAlign:"center",padding:"60px 20px",color:"#475569"}}>
+            <div style={{fontSize:44,marginBottom:12}}>💊</div>
+            <div style={{fontSize:15,fontWeight:700,color:"#64748b"}}>Select an API compound</div>
+            <div style={{fontSize:11,marginTop:5,color:"#334155"}}>{compounds.length} Active Pharmaceutical Ingredients</div>
+          </div>
+        )}
+        {selected&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+              <div>
+                <div style={{color:"#f1f5f9",fontSize:18,fontWeight:800,lineHeight:1.2}}>{selected.name}</div>
+                <div style={{color:"#e879f9",fontSize:12,fontWeight:700,marginTop:3}}>{selected.sub}</div>
+                <div style={{display:"flex",gap:4,marginTop:6,flexWrap:"wrap"}}>
+                  {selected.tags.map(t=><span key={t} style={{background:"#e879f922",color:"#e879f9",border:"1px solid #e879f944",borderRadius:99,fontSize:9,fontWeight:700,padding:"2px 7px",textTransform:"uppercase"}}>{t}</span>)}
+                </div>
+              </div>
+              <div style={{width:46,height:46,borderRadius:23,border:"3px solid #e879f9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>💊</div>
+            </div>
+
+            {/* Description */}
+            <div style={{background:"#e879f911",border:"1px solid #e879f933",borderRadius:12,padding:14,marginBottom:14}}>
+              <div style={{color:"#e879f9",fontWeight:700,fontSize:11,marginBottom:5}}>Mechanism / Description</div>
+              <div style={{color:"#94a3b8",fontSize:13,lineHeight:1.7}}>{selected.description}</div>
+            </div>
+
+            {/* What's in the paid package */}
+            <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:14,marginBottom:14}}>
+              <div style={{color:"#f1f5f9",fontWeight:700,fontSize:13,marginBottom:10}}>📦 Complete Technical Package</div>
+              {[
+                {icon:"📋",title:"Formulation",desc:"Complete tablet/capsule/injectable formulation with excipients, grades, and percentages"},
+                {icon:"⚗️",title:"Synthesis Route",desc:"Step-by-step synthesis process, reaction conditions, reagents, yields"},
+                {icon:"📊",title:"Specifications",desc:"IP/BP/USP/EP specifications, assay, impurity limits, dissolution"},
+                {icon:"🔬",title:"Analytical Methods",desc:"HPLC, dissolution, related substances, dissolution methods"},
+                {icon:"📄",title:"Regulatory Docs",desc:"DMF reference, CEP status, ICH stability data overview"},
+                {icon:"🏭",title:"Manufacturing Process",desc:"Batch manufacturing record template, in-process controls, equipment"},
+              ].map(item=>(
+                <div key={item.title} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10,padding:"9px 12px",background:"#060b14",borderRadius:9,border:"1px solid #1e293b"}}>
+                  <span style={{fontSize:16,flexShrink:0}}>{item.icon}</span>
+                  <div>
+                    <div style={{color:"#cbd5e1",fontSize:12,fontWeight:700}}>{item.title}</div>
+                    <div style={{color:"#475569",fontSize:11,marginTop:2,lineHeight:1.4}}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Process overview */}
+            <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:14,marginBottom:14}}>
+              <div style={{color:"#94a3b8",fontSize:13,lineHeight:1.7}}>{selected.process}</div>
+            </div>
+
+            {/* CTA buttons */}
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {isPaid?(
+                <>
+                  <button onClick={handleRequestQuote} style={{width:"100%",padding:"13px",borderRadius:11,background:"linear-gradient(135deg,#e879f9,#a855f7)",border:"none",color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+                    📩 Request Complete Technical Package
+                  </button>
+                  <div style={{color:"#334155",fontSize:11,textAlign:"center"}}>Response within 24 hours · Included in your plan</div>
+                </>
+              ):(
+                <>
+                  <div style={{background:"#e879f911",border:"1px solid #e879f933",borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
+                    <div style={{color:"#e879f9",fontWeight:700,fontSize:13,marginBottom:4}}>Unlock Full Technical Package</div>
+                    <div style={{color:"#64748b",fontSize:11,marginBottom:12}}>Subscribe to access complete formulation, synthesis route, specifications, and analytical methods for all {compounds.length} APIs</div>
+                    <button onClick={()=>onUpgrade("Full Pharma API Technical Package")} style={{padding:"10px 24px",borderRadius:9,background:"linear-gradient(135deg,#e879f9,#a855f7)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                      ✨ Upgrade to Access →
+                    </button>
+                  </div>
+                  <div style={{color:"#334155",fontSize:10,textAlign:"center"}}>Or pay ₹499 per compound → Request a Quote</div>
+                  <button onClick={handleRequestQuote} style={{width:"100%",padding:"11px",borderRadius:10,border:"1px solid #e879f9",background:"transparent",color:"#e879f9",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                    📩 Pay ₹499 — Request This Compound Package
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Banner Ad ────────────────────────────────────────────────────────────
 function BannerAd({onUpgrade}){
   const [i,setI]=useState(0);
@@ -2209,6 +2358,7 @@ export default function App(){
   const plan=PLANS[planKey];
   const isChemEng=catId==="chemeng";
   const isRequest=catId==="request";
+  const isPharma=catId==="pharma";
   const priority=user?INDUSTRY_PRIORITY[user.industry]||[]:[];
 
   const handleLogin=useCallback((u)=>{
@@ -2309,6 +2459,7 @@ export default function App(){
           <button key={c.id} onClick={()=>{setCatId(c.id);setSelected(null);setSearch("");}} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:catId===c.id?c.color:"#475569",borderBottom:`2px solid ${catId===c.id?c.color:"transparent"}`,fontWeight:catId===c.id?700:500,fontSize:10,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}>
             {c.icon} {c.label}
             {c.enterprise&&<span style={{background:"#fb923c22",color:"#fb923c",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>ENT</span>}
+            {c.paid&&<span style={{background:"#e879f922",color:"#e879f9",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>PRO</span>}
             {c.special&&<span style={{background:"#f59e0b22",color:"#f59e0b",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>NEW</span>}
             {priority.includes(c.id)&&!c.enterprise&&!c.special&&<span style={{background:"#34d39922",color:"#34d399",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>★</span>}
           </button>
@@ -2319,6 +2470,313 @@ export default function App(){
       {isRequest?(
         <div style={{flex:1,overflowY:"auto"}}>
           <RequestFormula user={user} planKey={planKey} currency={currency} onUpgrade={handleUpgrade}/>
+        </div>
+      ):isPharma?(
+        <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}}>
+          <PharmaPanel planKey={planKey} currency={currency} onUpgrade={handleUpgrade}/>
+        </div>
+      ):isChemEng?(
+        <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}}>
+          <ChemEngPanel planKey={planKey} currency={currency}/>
+        </div>
+      ):(
+        <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
+          <div style={{width:252,borderRight:"1px solid #1e293b",overflowY:"auto",padding:10,flexShrink:0,display:"flex",flexDirection:"column"}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`🔍  Search ${cat?.label||""}...`}
+              style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:11,outline:"none",marginBottom:8}}/>
+            {planKey==="free"&&(
+              <div style={{background:catColor+"11",border:`1px solid ${catColor}22`,borderRadius:7,padding:"6px 9px",marginBottom:8,fontSize:10,color:"#475569"}}>
+                🔒 {allFormulas.filter(f=>!f.free).length} locked · <span onClick={()=>handleUpgrade()} style={{color:catColor,cursor:"pointer",fontWeight:700}}>Unlock all formulas</span>
+              </div>
+            )}
+            <div style={{flex:1,overflowY:"auto"}}>
+              {allFormulas.filter(f=>!search||(f.name.toLowerCase().includes(search.toLowerCase())||f.sub?.toLowerCase().includes(search.toLowerCase()))).map(f=>{
+                const locked=planKey==="free"&&!f.free;
+                const costINR=f.ingredients.reduce((t,i)=>t+(i.p/100)*i.c,0);
+                return(
+                  <div key={f.id} onClick={()=>handleSelect(f)} style={{background:selected?.id===f.id?"#0f172a":"#0a0f1e",border:`1px solid ${selected?.id===f.id?catColor:"#1e293b"}`,borderRadius:10,padding:"10px 11px",cursor:"pointer",marginBottom:6,opacity:locked?0.5:1,transition:"all 0.2s",boxShadow:selected?.id===f.id?`0 0 12px ${catColor}33`:"none"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div style={{minWidth:0,marginRight:5}}>
+                        <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:1}}>{locked?"🔒 ":""}{f.name}</div>
+                        <div style={{color:"#475569",fontSize:9,marginBottom:4,lineHeight:1.3}}>{f.sub}</div>
+                        <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>{f.tags.slice(0,2).map(t=><Pill key={t} label={t} color={catColor}/>)}</div>
+                      </div>
+                      <Ring score={f.score} size={37}/>
+                    </div>
+                    <div style={{display:"flex",gap:8,marginTop:6}}>
+                      <span style={{color:"#64748b",fontSize:9}}>💰 <span style={{color:"#94a3b8"}}>{fmtCur(costINR,currency)}/kg</span></span>
+                      <span style={{color:"#64748b",fontSize:9}}>🧪 <span style={{color:"#94a3b8"}}>{f.ingredients.length} ingr.</span></span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,minWidth:0}}>
+            <div style={{borderBottom:"1px solid #1e293b",display:"flex",padding:"0 12px",background:"#060b14",flexShrink:0}}>
+              {[{id:"formula",l:"📋 Formula"},{id:"optimizer",l:"🤖 AI Optimize"},{id:"batch",l:"⚖️ Batch Calc"}].map(t=>(
+                <button key={t.id} onClick={()=>setRightTab(t.id)} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:rightTab===t.id?"#4f9cf9":"#475569",borderBottom:`2px solid ${rightTab===t.id?"#4f9cf9":"transparent"}`,fontWeight:rightTab===t.id?700:500,fontSize:11,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap"}}>{t.l}</button>
+              ))}
+            </div>
+            <div style={{flex:1,overflowY:"auto",padding:16,minWidth:0}}>
+              {!selected&&(
+                <div style={{textAlign:"center",padding:"60px 20px",color:"#475569"}}>
+                  <div style={{fontSize:40,marginBottom:10}}>{cat?.icon||"⚗️"}</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Select a formula</div>
+                  <div style={{fontSize:11,marginTop:5,color:"#334155"}}>{allFormulas.length} formulas · {allFormulas.filter(f=>f.free).length} free</div>
+                  {priority.includes(catId)&&<div style={{color:"#34d399",fontSize:11,marginTop:4}}>★ Priority category for your industry</div>}
+                </div>
+              )}
+              {selected&&rightTab==="formula"&&<FormulaDetail formula={selected} currency={currency} planKey={planKey} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
+              {selected&&rightTab==="optimizer"&&<AIOptimizer formula={selected} planKey={planKey} currency={currency} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
+              {selected&&rightTab==="batch"&&<BatchCalc formula={selected} currency={currency}/>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {planKey==="free"&&<BannerAd onUpgrade={()=>handleUpgrade()}/>}
+    </div>
+  );
+}
+
+// ─── Banner Ad ────────────────────────────────────────────────────────────
+function BannerAd({onUpgrade}){
+  const [i,setI]=useState(0);
+  const ads=[
+    {b:"BASF India",t:"Acronal® & Lutensol® — premium raw materials for coatings"},
+    {b:"Amazon Business",t:"Lab equipment & chemicals — bulk pricing, GST invoice"},
+    {b:"Dow Chemical India",t:"WALOCEL™ cellulosics for drymix & construction"},
+    {b:"Merck India",t:"High purity chemicals for R&D, pilot and scale-up"},
+    {b:"Flipkart Business",t:"Industrial supplies & packaging at wholesale rates"},
+    {b:"Pidilite Industries",t:"Specialty chemicals & raw materials for formulators"},
+  ];
+  useEffect(()=>{ const t=setInterval(()=>setI(x=>(x+1)%ads.length),5000); return()=>clearInterval(t); },[]);
+  return(
+    <div style={{borderTop:"1px solid #1e293b",background:"#060b14",padding:"6px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+        <span style={{background:"#1e293b",color:"#475569",fontSize:8,fontWeight:700,padding:"2px 4px",borderRadius:3,letterSpacing:"0.08em",flexShrink:0}}>AD</span>
+        <span style={{color:"#64748b",fontSize:10,fontWeight:700,flexShrink:0}}>{ads[i].b}</span>
+        <span style={{color:"#334155",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ads[i].t}</span>
+      </div>
+      <button onClick={onUpgrade} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontSize:10,padding:"4px 9px",borderRadius:5,cursor:"pointer",fontWeight:700,whiteSpace:"nowrap",flexShrink:0}}>Remove Ads ✨</button>
+    </div>
+  );
+}
+
+// ─── ChemEng Panel ────────────────────────────────────────────────────────
+function ChemEngPanel({planKey, currency}){
+  const [sel,setSel]=useState(null);
+  const [reqSent,setReqSent]=useState({});
+  if(planKey!=="enterprise") return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"50px 24px",textAlign:"center",flex:1}}>
+      <div style={{fontSize:44,marginBottom:12}}>⚗️</div>
+      <div style={{color:"#fb923c",fontWeight:900,fontSize:18,marginBottom:8}}>ChemEng Pro</div>
+      <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,maxWidth:360,marginBottom:16}}>Industrial chemical manufacturing processes — emulsion polymerisation, cellulose ethers, fermentation, resin synthesis and more.<br/><br/><strong style={{color:"#94a3b8"}}>Enterprise plan exclusive.</strong></div>
+    </div>
+  );
+  return(
+    <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
+      <div style={{width:255,borderRight:"1px solid #1e293b",overflowY:"auto",padding:11,flexShrink:0}}>
+        <div style={{color:"#fb923c",fontWeight:800,fontSize:12,marginBottom:2}}>⚗️ ChemEng Pro</div>
+        <div style={{color:"#475569",fontSize:9,marginBottom:10}}>Enterprise · Industrial processes</div>
+        {FORMULAS.chemeng.map(f=>(
+          <div key={f.id} onClick={()=>setSel(f)} style={{background:sel?.id===f.id?"#0f172a":"#0a0f1e",border:`1px solid ${sel?.id===f.id?"#fb923c":"#1e293b"}`,borderRadius:10,padding:"10px 11px",cursor:"pointer",marginBottom:6,transition:"all 0.2s"}}>
+            <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:2}}>{f.name}</div>
+            <div style={{color:"#475569",fontSize:9,marginBottom:4}}>{f.sub}</div>
+            <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>{f.tags.slice(0,2).map(t=><Pill key={t} label={t} color="#fb923c"/>)}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:18}}>
+        {!sel&&<div style={{textAlign:"center",padding:"60px 20px",color:"#475569"}}><div style={{fontSize:40,marginBottom:10}}>⚗️</div><div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Select a chemical process</div></div>}
+        {sel&&(
+          <div>
+            <div style={{color:"#f1f5f9",fontSize:17,fontWeight:800,marginBottom:2}}>{sel.name}</div>
+            <div style={{color:"#64748b",fontSize:11,marginBottom:9}}>{sel.sub}</div>
+            <div style={{display:"flex",gap:3,flexWrap:"wrap",marginBottom:12}}>{sel.tags.map(t=><Pill key={t} label={t} color="#fb923c"/>)}</div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Feedstocks / Raw Materials</div>
+            {sel.ingredients.filter(i=>i.p>0).map((ing,i)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 11px",background:"#0a0f1e",borderRadius:8,marginBottom:4,border:"1px solid #1e293b"}}>
+                <span style={{color:"#cbd5e1",fontSize:12}}>{ing.n}</span>
+                <div style={{display:"flex",gap:9}}>
+                  <span style={{color:"#fb923c",fontWeight:700,fontSize:11}}>{ing.p}%</span>
+                  <span style={{color:"#475569",fontSize:10}}>₹{ing.c}/kg</span>
+                </div>
+              </div>
+            ))}
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,marginTop:14}}>Process Steps</div>
+            {sel.process?.map((step,i)=>(
+              <div key={i} style={{display:"flex",gap:9,marginBottom:7,padding:"8px 11px",background:"#0a0f1e",borderRadius:9,border:"1px solid #1e293b"}}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:"#fb923c22",border:"1px solid #fb923c44",display:"flex",alignItems:"center",justifyContent:"center",color:"#fb923c",fontSize:9,fontWeight:800,flexShrink:0}}>{i+1}</div>
+                <div style={{color:"#94a3b8",fontSize:12,lineHeight:1.6}}>{step}</div>
+              </div>
+            ))}
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,marginTop:14}}>Key Equipment</div>
+            {sel.equipment?.map((eq,i)=>(
+              <div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:5,padding:"7px 11px",background:"#0a0f1e",borderRadius:8,border:"1px solid #1e293b"}}>
+                <span style={{fontSize:12}}>⚙️</span><span style={{color:"#cbd5e1",fontSize:12}}>{eq}</span>
+              </div>
+            ))}
+            <div style={{marginTop:18}}>
+              <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Engineering Services — Request a Quote</div>
+              {[
+                {key:"basic",label:"📄 Basic Engineering",desc:"PFD, equipment list, cost estimate ±30%",color:"#4f9cf9"},
+                {key:"detailed",label:"🔬 Detailed Engineering",desc:"P&ID, datasheets, HAZOP, procurement",color:"#a78bfa"},
+                {key:"plant",label:"🏭 Full Plant Setup",desc:"Turnkey design, vendor selection, commissioning",color:"#fb923c"},
+              ].map(svc=>(
+                <div key={svc.key} style={{background:svc.color+"11",border:`1px solid ${svc.color}33`,borderRadius:10,padding:12,marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                  <div>
+                    <div style={{color:svc.color,fontWeight:700,fontSize:12}}>{svc.label}</div>
+                    <div style={{color:"#475569",fontSize:10,marginTop:2}}>{svc.desc}</div>
+                  </div>
+                  <button onClick={()=>setReqSent(r=>({...r,[sel.id+svc.key]:true}))} style={{background:reqSent[sel.id+svc.key]?"#34d399":svc.color,border:"none",color:"#fff",fontWeight:700,fontSize:10,padding:"6px 12px",borderRadius:7,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
+                    {reqSent[sel.id+svc.key]?"✅ Sent":"Request Quote"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────
+export default function App(){
+  const [user,setUser]=useState(null);
+  const [planKey,setPlanKey]=useState("free");
+  const [currency,setCurrency]=useState("INR");
+  const [catId,setCatId]=useState("drymix");
+  const [selected,setSelected]=useState(null);
+  const [rightTab,setRightTab]=useState("formula");
+  const [search,setSearch]=useState("");
+  const [showPricing,setShowPricing]=useState(false);
+  const [paywallMsg,setPaywallMsg]=useState(null);
+  const [usage,setUsage]=useState({ai:0,process:0,equipment:0});
+  const [paymentPortal,setPaymentPortal]=useState(null); // {plan, currency}
+
+  const plan=PLANS[planKey];
+  const isChemEng=catId==="chemeng";
+  const isRequest=catId==="request";
+  const isPharma=catId==="pharma";
+  const priority=user?INDUSTRY_PRIORITY[user.industry]||[]:[];
+
+  const handleLogin=useCallback((u)=>{
+    setUser(u);
+    if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
+  },[]);
+
+  const allFormulas=FORMULAS[catId]||[];
+  const cat=CATEGORIES.find(c=>c.id===catId);
+  const catColor=cat?.color||"#4f9cf9";
+
+  const handleSelect=(f)=>{
+    if(planKey==="free"&&!f.free){setPaywallMsg("Full Formula Library (Starter+)");return;}
+    setSelected(f); setRightTab("formula");
+  };
+
+  const handleUpgrade=(msg)=>{ setPaywallMsg(msg||null); setShowPricing(true); };
+
+  const handleSelectPlan=(key,planObj)=>{
+    if(key==="free"){ setPlanKey("free"); setShowPricing(false); setPaywallMsg(null); return; }
+    // Show payment portal for paid plans
+    setShowPricing(false);
+    setPaymentPortal({plan:planObj, key});
+  };
+
+  const handlePaymentSuccess=()=>{
+    setPlanKey(paymentPortal.key);
+    setUsage({ai:0,process:0,equipment:0});
+    setPaymentPortal(null);
+    setPaywallMsg(null);
+  };
+
+  const useQuota=(type)=>setUsage(u=>({...u,[type]:u[type]+1}));
+
+  if(!user) return <LoginScreen onLogin={handleLogin}/>;
+
+  return(
+    <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#060b14",height:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        ::-webkit-scrollbar{width:7px;height:7px}
+        ::-webkit-scrollbar-track{background:#0d1626}
+        ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;border:1px solid #0d1626}
+        ::-webkit-scrollbar-thumb:hover{background:#475569}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+        input,select,button{font-family:inherit}
+      `}</style>
+
+      {/* Payment Portal */}
+      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} currency={currency} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
+
+      {/* Pricing Modal */}
+      {showPricing&&!paymentPortal&&<PricingModal onClose={()=>{setShowPricing(false);setPaywallMsg(null);}} currency={currency} onSelectPlan={handleSelectPlan}/>}
+
+      {/* Paywall prompt */}
+      {paywallMsg&&!showPricing&&!paymentPortal&&(
+        <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:18,padding:24,maxWidth:300,width:"90%",textAlign:"center"}}>
+            <div style={{fontSize:34,marginBottom:9}}>🔒</div>
+            <div style={{color:"#f1f5f9",fontWeight:800,fontSize:15,marginBottom:6}}>Premium Feature</div>
+            <div style={{color:"#64748b",fontSize:12,lineHeight:1.6,marginBottom:16}}><strong style={{color:"#94a3b8"}}>{paywallMsg}</strong></div>
+            <button onClick={()=>setShowPricing(true)} style={{width:"100%",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:13,padding:"11px",borderRadius:10,cursor:"pointer",marginBottom:8}}>View Plans & Upgrade</button>
+            <button onClick={()=>setPaywallMsg(null)} style={{width:"100%",background:"transparent",border:"1px solid #1e293b",color:"#475569",fontWeight:600,fontSize:12,padding:"8px",borderRadius:10,cursor:"pointer"}}>← Go Back</button>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{borderBottom:"1px solid #1e293b",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#060b14",flexShrink:0,gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+          <div style={{width:28,height:28,borderRadius:8,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>⚗</div>
+          <div>
+            <div style={{fontWeight:900,fontSize:13}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
+            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name} · {INDUSTRIES.find(i=>i.id===user.industry)?.label}</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:5,flex:1,justifyContent:"center",flexWrap:"wrap"}}>
+          <QBadge used={usage.ai} limit={plan.ai} label="AI" color="#4f9cf9"/>
+          {planKey!=="free"&&<QBadge used={usage.process} limit={plan.process} label="Process" color="#34d399"/>}
+          {planKey!=="free"&&<QBadge used={usage.equipment} limit={plan.equipment} label="Equip" color="#e8a838"/>}
+        </div>
+        <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
+          <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden"}}>
+            {["INR","USD"].map(c=>(
+              <button key={c} onClick={()=>setCurrency(c)} style={{padding:"4px 9px",border:"none",background:currency===c?"#1e293b":"transparent",color:currency===c?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{c==="INR"?"₹ INR":"$ USD"}</button>
+            ))}
+          </div>
+          <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:10,fontWeight:800,padding:"5px 11px",borderRadius:6,cursor:"pointer"}}>
+            {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
+          </button>
+        </div>
+      </div>
+
+      {/* Category tabs */}
+      <div style={{display:"flex",borderBottom:"1px solid #1e293b",background:"#060b14",flexShrink:0,overflowX:"auto"}}>
+        {CATEGORIES.map(c=>(
+          <button key={c.id} onClick={()=>{setCatId(c.id);setSelected(null);setSearch("");}} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:catId===c.id?c.color:"#475569",borderBottom:`2px solid ${catId===c.id?c.color:"transparent"}`,fontWeight:catId===c.id?700:500,fontSize:10,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}>
+            {c.icon} {c.label}
+            {c.enterprise&&<span style={{background:"#fb923c22",color:"#fb923c",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>ENT</span>}
+            {c.paid&&<span style={{background:"#e879f922",color:"#e879f9",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>PRO</span>}
+            {c.special&&<span style={{background:"#f59e0b22",color:"#f59e0b",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>NEW</span>}
+            {priority.includes(c.id)&&!c.enterprise&&!c.special&&<span style={{background:"#34d39922",color:"#34d399",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>★</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* Body */}
+      {isRequest?(
+        <div style={{flex:1,overflowY:"auto"}}>
+          <RequestFormula user={user} planKey={planKey} currency={currency} onUpgrade={handleUpgrade}/>
+        </div>
+      ):isPharma?(
+        <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}}>
+          <PharmaPanel planKey={planKey} currency={currency} onUpgrade={handleUpgrade}/>
         </div>
       ):isChemEng?(
         <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}}>
