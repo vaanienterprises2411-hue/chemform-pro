@@ -1,20 +1,5 @@
 {
   "buildCommand": "vite build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/optimize.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/optimize",
-      "dest": "/api/optimize.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "framework": "vite"
 }
