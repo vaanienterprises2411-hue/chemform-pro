@@ -2073,92 +2073,106 @@ function PaymentPortal({plan, currency, onSuccess, onCancel}){
 
 // ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
-  const [step,setStep]=useState("form");
-  const [contact,setContact]=useState("");
-  const [otp,setOtp]=useState("");
   const [name,setName]=useState("");
+  const [email,setEmail]=useState("");
   const [city,setCity]=useState("");
-  const [country,setCountry]=useState("");
+  const [country,setCountry]=useState("India");
   const [industry,setIndustry]=useState("");
   const [err,setErr]=useState("");
   const [loading,setLoading]=useState(false);
-  const [userId,setUserId]=useState(null);
-  const [userSession,setUserSession]=useState(null);
 
-  const sendOtp=async()=>{
-    if(!contact.trim()){setErr("Enter email or phone number");return;}
+  const handleStart=async()=>{
+    if(!name.trim()){setErr("Please enter your name");return;}
+    if(!email.trim()||!email.includes("@")){setErr("Please enter a valid email");return;}
+    if(!industry){setErr("Please select your industry");return;}
     setLoading(true);
-    const ok=await sendOTP(contact.trim());
+    // Save to Supabase profiles table
+    try {
+      await fetch("https://zpuzqnitczhgllgohrba.supabase.co/rest/v1/profiles", {
+        method:"POST",
+        headers:{
+          "apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdXpxbml0Y3poZ2xsZ29ocmJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjIzNjIsImV4cCI6MjA5NDIzODM2Mn0.rM7RVpDW4o4j3GnyMVMBO_qkBPlo2zMTe5yG2v5SAH4",
+          "Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdXpxbml0Y3poZ2xsZ29ocmJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjIzNjIsImV4cCI6MjA5NDIzODM2Mn0.rM7RVpDW4o4j3GnyMVMBO_qkBPlo2zMTe5yG2v5SAH4",
+          "Content-Type":"application/json",
+          "Prefer":"resolution=merge-duplicates",
+        },
+        body:JSON.stringify({email:email.trim(),name:name.trim(),city,country,industry,plan:"free"}),
+      });
+    } catch(e){ console.log("Supabase save error:",e); }
     setLoading(false);
-    if(ok){setStep("otp");setErr("OTP sent! Check your email or SMS.");}
-    else setErr("Could not send OTP. Please try again.");
-  };
-  const verifyOtp=async()=>{
-    if(otp.length<6){setErr("Enter the 6-digit OTP");return;}
-    setLoading(true);
-    const {user,session,error}=await verifyOTP(contact.trim(),otp.trim());
-    setLoading(false);
-    if(error||!user){setErr("Incorrect OTP. Try again.");return;}
-    setSession(session);
-    const profile=await getProfile(user.id,session);
-    if(profile&&profile.name){onLogin({...profile,id:user.id,session});return;}
-    setUserId(user.id);
-    setUserSession(session);
-    setStep("profile");setErr("");
-  };
-  const complete=()=>{
-    if(!name.trim()||!industry){setErr("Name and industry are required");return;}
-    onLogin({name,contact,city,country,industry,plan:"free"});
+    onLogin({name:name.trim(),email:email.trim(),city,country,industry,plan:"free"});
   };
 
   return(
-    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999}}>
-      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:400,width:"90%"}}>
+    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
+      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:420,width:"100%",maxHeight:"90vh",overflowY:"auto"}}>
         <div style={{textAlign:"center",marginBottom:22}}>
-          <div style={{width:40,height:40,borderRadius:11,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,margin:"0 auto 10px"}}>⚗</div>
-          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:18}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-          <div style={{color:"#475569",fontSize:12,marginTop:3}}>AI Formulation Platform</div>
+          <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 10px"}}>⚗</div>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
+          <div style={{color:"#475569",fontSize:12,marginTop:3}}>AI Formulation Platform · Free to start</div>
         </div>
 
-        {step==="form"&&<>
-          <div style={{color:"#94a3b8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Sign in with OTP — no password</div>
-          <input value={contact} onChange={e=>setContact(e.target.value)} placeholder="Enter your email address" style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"10px 12px",color:"#f1f5f9",fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
-          {err&&<div style={{color:"#fbbf24",fontSize:12,padding:"8px",background:"#fbbf2411",borderRadius:7,marginBottom:10}}>{err}</div>}
-          <button onClick={sendOtp} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>Send OTP →</button>
-          <div style={{color:"#334155",fontSize:11,textAlign:"center",marginTop:10}}>OTP sent to your email · Free plan · No card required</div>
-        </>}
-
-        {step==="otp"&&<>
-          <div style={{color:"#94a3b8",fontSize:12,marginBottom:12}}>OTP sent to <strong style={{color:"#f1f5f9"}}>{contact}</strong></div>
-          <input value={otp} onChange={e=>setOtp(e.target.value)} placeholder="6-digit OTP" maxLength={6} style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"12px",color:"#f1f5f9",fontSize:20,outline:"none",marginBottom:12,textAlign:"center",letterSpacing:"0.3em",boxSizing:"border-box"}}/>
-          {err&&<div style={{color:"#fbbf24",fontSize:12,padding:"8px",background:"#fbbf2411",borderRadius:7,marginBottom:10}}>{err}</div>}
-          <button onClick={verifyOtp} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:9}}>Verify OTP ✓</button>
-          <button onClick={()=>{setStep("form");setErr("");}} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:12,cursor:"pointer"}}>← Change contact</button>
-        </>}
-
-        {step==="profile"&&<>
-          <div style={{color:"#34d399",fontWeight:700,fontSize:13,marginBottom:14}}>✓ Verified! Tell us about yourself</div>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your full name *" style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"9px 12px",color:"#f1f5f9",fontSize:13,outline:"none",marginBottom:8,boxSizing:"border-box"}}/>
-          <div style={{display:"flex",gap:8,marginBottom:12}}>
-            <input value={city} onChange={e=>setCity(e.target.value)} placeholder="City" style={{flex:1,background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"9px 12px",color:"#f1f5f9",fontSize:13,outline:"none"}}/>
-            <input value={country} onChange={e=>setCountry(e.target.value)} placeholder="Country" style={{flex:1,background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"9px 12px",color:"#f1f5f9",fontSize:13,outline:"none"}}/>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Your Name *</div>
+            <input value={name} onChange={e=>setName(e.target.value)}
+              placeholder="Full name"
+              style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          <div style={{color:"#94a3b8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Your Industry * <span style={{color:"#475569",fontWeight:400,fontSize:10,textTransform:"none"}}>(unlocks relevant formulas first)</span></div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
-            {INDUSTRIES.map(ind=>(
-              <div key={ind.id} onClick={()=>setIndustry(ind.id)} style={{padding:"8px 10px",borderRadius:9,border:`1px solid ${industry===ind.id?"#4f9cf9":"#1e293b"}`,background:industry===ind.id?"#4f9cf915":"#060b14",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:13}}>{ind.icon}</span>
-                <span style={{color:industry===ind.id?"#4f9cf9":"#64748b",fontSize:10,fontWeight:600,lineHeight:1.3}}>{ind.label}</span>
-              </div>
-            ))}
+
+          <div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Work Email *</div>
+            <input value={email} onChange={e=>setEmail(e.target.value)}
+              placeholder="you@company.com"
+              type="email"
+              style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          {err&&<div style={{color:"#f87171",fontSize:12,padding:"8px",background:"#f8717111",borderRadius:7,marginBottom:10}}>{err}</div>}
-          <button onClick={complete} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>Enter ChemForm Pro →</button>
-        </>}
+
+          <div style={{display:"flex",gap:8}}>
+            <div style={{flex:1}}>
+              <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>City</div>
+              <input value={city} onChange={e=>setCity(e.target.value)}
+                placeholder="City"
+                style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Country</div>
+              <input value={country} onChange={e=>setCountry(e.target.value)}
+                placeholder="Country"
+                style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            </div>
+          </div>
+
+          <div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Your Industry * <span style={{color:"#334155",fontWeight:400,textTransform:"none",fontSize:10}}>(personalises your experience)</span></div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+              {INDUSTRIES.map(ind=>(
+                <div key={ind.id} onClick={()=>setIndustry(ind.id)}
+                  style={{padding:"8px 10px",borderRadius:9,border:`1px solid ${industry===ind.id?"#4f9cf9":"#1e293b"}`,background:industry===ind.id?"#4f9cf915":"#060b14",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:14}}>{ind.icon}</span>
+                  <span style={{color:industry===ind.id?"#4f9cf9":"#64748b",fontSize:10,fontWeight:600,lineHeight:1.3}}>{ind.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {err&&<div style={{color:"#f87171",fontSize:12,padding:"8px 12px",background:"#f8717111",borderRadius:8}}>{err}</div>}
+
+          <button onClick={handleStart} disabled={loading}
+            style={{padding:"13px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"wait":"pointer",marginTop:4}}>
+            {loading?"Saving...":"Start Using ChemForm Pro →"}
+          </button>
+
+          <div style={{textAlign:"center",color:"#334155",fontSize:11}}>
+            Free plan · No credit card · No password needed<br/>
+            Your data is stored securely and never shared
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
 
 // ─── Pricing Modal ────────────────────────────────────────────────────────
 function PricingModal({onClose, currency, onSelectPlan}){
