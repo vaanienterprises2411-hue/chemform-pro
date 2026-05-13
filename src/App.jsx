@@ -2493,7 +2493,7 @@ Respond ONLY with valid JSON (no markdown, no text outside):
 {"summary":"2-3 sentences explaining WHAT you changed and WHY, specific to the goal","optimized_ingredients":[{"name":"exact ingredient name from the list above","original_pct":0.0,"new_pct":0.0,"change":"increase|decrease|unchanged|new","reason":"specific technical reason for this change"}],"estimated_cost_inr":0.0,"estimated_performance":0,"cost_savings_pct":0.0,"key_changes":["specific change 1","specific change 2"],"warnings":["any formulation risks or constraints"]}`;
 
     try{
-      const res=await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev",{
+      const res=await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev/",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:prompt}]})
