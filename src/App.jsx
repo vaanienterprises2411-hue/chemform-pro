@@ -685,7 +685,7 @@ const PHARMA_FORMULAS = [
     { id:"ph153", name:"PANTOPRAZOLE SODIUM", sub:"PPI — GI", score:90, tags:["GI / GASTROENTEROLOGY","API","Pharma"], free:false, pharma:true,
       description:"Proton pump inhibitor. For GERD, erosive oesophagitis, and Zollinger-Ellison syndrome.",
       ingredients:[{n:"PANTOPRAZOLE SODIUM API",p:100,c:500}],
-      process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Requesta quote for detailed technical package." },
+      process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Request a quote for detailed technical package." },
     { id:"ph154", name:"PAROXETINE HYDROCHLORIDE", sub:"SSRI — CNS", score:90, tags:["CNS / NEUROLOGICAL","API","Pharma"], free:false, pharma:true,
       description:"Potent serotonin reuptake inhibitor. For depression, panic disorder, OCD, and PTSD.",
       ingredients:[{n:"PAROXETINE HYDROCHLORIDE API",p:100,c:500}],
@@ -2493,10 +2493,10 @@ Respond ONLY with valid JSON (no markdown, no text outside):
 {"summary":"2-3 sentences explaining WHAT you changed and WHY, specific to the goal","optimized_ingredients":[{"name":"exact ingredient name from the list above","original_pct":0.0,"new_pct":0.0,"change":"increase|decrease|unchanged|new","reason":"specific technical reason for this change"}],"estimated_cost_inr":0.0,"estimated_performance":0,"cost_savings_pct":0.0,"key_changes":["specific change 1","specific change 2"],"warnings":["any formulation risks or constraints"]}`;
 
     try{
-      const res=await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev/",{
+      const res=await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:prompt}]})
+        body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:1500,messages:[{role:"user",content:prompt}]})
       });
       if(!res.ok){
         const e=await res.json().catch(()=>({}));
