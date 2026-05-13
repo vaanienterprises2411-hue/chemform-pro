@@ -2122,10 +2122,10 @@ function LoginScreen({onLogin}){
 
         {step==="form"&&<>
           <div style={{color:"#94a3b8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Sign in with OTP — no password</div>
-          <input value={contact} onChange={e=>setContact(e.target.value)} placeholder="Email or +91 phone number" style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"10px 12px",color:"#f1f5f9",fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
+          <input value={contact} onChange={e=>setContact(e.target.value)} placeholder="Enter your email address" style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:8,padding:"10px 12px",color:"#f1f5f9",fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
           {err&&<div style={{color:"#fbbf24",fontSize:12,padding:"8px",background:"#fbbf2411",borderRadius:7,marginBottom:10}}>{err}</div>}
           <button onClick={sendOtp} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>Send OTP →</button>
-          <div style={{color:"#334155",fontSize:11,textAlign:"center",marginTop:10}}>Free plan available · No card required to start</div>
+          <div style={{color:"#334155",fontSize:11,textAlign:"center",marginTop:10}}>OTP sent to your email · Free plan · No card required</div>
         </>}
 
         {step==="otp"&&<>
