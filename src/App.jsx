@@ -2104,15 +2104,15 @@ function LoginScreen({onLogin}){
   };
 
   return(
-    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
-      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:420,width:"100%",maxHeight:"90vh",overflowY:"auto"}}>
-        <div style={{textAlign:"center",marginBottom:22}}>
+    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16,overflowY:"auto"}}>
+      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24,maxWidth:420,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:16}}>
           <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 10px"}}>⚗</div>
           <div style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
           <div style={{color:"#475569",fontSize:12,marginTop:3}}>AI Formulation Platform · Free to start</div>
         </div>
 
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <div>
             <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Your Name *</div>
             <input value={name} onChange={e=>setName(e.target.value)}
