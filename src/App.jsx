@@ -685,7 +685,7 @@ const PHARMA_FORMULAS = [
     { id:"ph153", name:"PANTOPRAZOLE SODIUM", sub:"PPI — GI", score:90, tags:["GI / GASTROENTEROLOGY","API","Pharma"], free:false, pharma:true,
       description:"Proton pump inhibitor. For GERD, erosive oesophagitis, and Zollinger-Ellison syndrome.",
       ingredients:[{n:"PANTOPRAZOLE SODIUM API",p:100,c:500}],
-      process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Request a quote for detailed technical package." },
+      process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Requesta quote for detailed technical package." },
     { id:"ph154", name:"PAROXETINE HYDROCHLORIDE", sub:"SSRI — CNS", score:90, tags:["CNS / NEUROLOGICAL","API","Pharma"], free:false, pharma:true,
       description:"Potent serotonin reuptake inhibitor. For depression, panic disorder, OCD, and PTSD.",
       ingredients:[{n:"PAROXETINE HYDROCHLORIDE API",p:100,c:500}],
