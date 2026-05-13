@@ -37,7 +37,14 @@ export const sendOTP = async (contact) => {
       "apikey": SUPABASE_ANON_KEY,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ ...body, create_user: true }),
+    body: JSON.stringify({ 
+      ...body, 
+      create_user: true,
+      options: { 
+        should_create_user: true,
+        email_redirect_to: null,
+      }
+    }),
   });
   return res.ok;
 };
