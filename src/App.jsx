@@ -3248,7 +3248,8 @@ export default function App(){
   const [showPricing,setShowPricing]=useState(false);
   const [paywallMsg,setPaywallMsg]=useState(null);
   const [usage,setUsage]=useState({ai:0,process:0,equipment:0});
-  const [paymentPortal,setPaymentPortal]=useState(null); // {plan, currency}
+  const [paymentPortal,setPaymentPortal]=useState(null); 
+  const [appReady,setAppReady]=useState(false);// {plan, currency}
 
   const plan=PLANS[planKey];
   const isChemEng=catId==="chemeng";
@@ -3256,9 +3257,26 @@ export default function App(){
   const isPharma=catId==="pharma";
   const priority=user?INDUSTRY_PRIORITY[user.industry]||[]:[];
 
+  useEffect(()=>{
+    try {
+      const saved = window.localStorage ? window.localStorage.getItem("chemform_user") : null;
+      if(saved){
+        const u = JSON.parse(saved);
+        if(u&&u.email&&u.name){
+          setUser(u);
+          setPlanKey(u.plan||"free");
+          if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
+        }
+      }
+    } catch(e){}
+    setAppReady(true);
+  },[]);
+
   const handleLogin=useCallback((u)=>{
     setUser(u);
+    setPlanKey(u.plan||"free");
     if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
+    try { window.localStorage && window.localStorage.setItem("chemform_user", JSON.stringify(u)); } catch(e){}
   },[]);
 
   const allFormulas=FORMULAS[catId]||[];
@@ -3350,7 +3368,7 @@ export default function App(){
               <button key={cur} onClick={()=>setCurrency(cur)} style={{padding:"4px 9px",border:"none",background:currency===cur?"#1e293b":"transparent",color:currency===cur?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{cur==="INR"?"₹ INR":"$ USD"}</button>
             ))}
           </div>
-          <button onClick={()=>{try{localStorage.removeItem("chemform_user");}catch(e){}setUser(null);setSelected(null);}}
+          <button onClick={()=>{try{window.localStorage && window.localStorage.removeItem("chemform_user");}catch(e){}setUser(null);setSelected(null);}}
             style={{background:"transparent",border:"1px solid #1e293b",color:"#334155",fontSize:9,fontWeight:600,padding:"4px 8px",borderRadius:6,cursor:"pointer"}}>
             Logout
           </button>
