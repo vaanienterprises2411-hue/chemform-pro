@@ -1994,12 +1994,43 @@ const Pill = ({label, color="#64748b"}) => (
 function Ring({score, size=44}){
   const r=size/2-5, circ=2*Math.PI*r, dash=(score/100)*circ;
   const col=score>=90?"#34d399":score>=80?"#e8a838":"#f87171";
+  const [show,setShow]=useState(false);
+  
+  const getDesc=()=>{
+    if(score>=95) return "⭐ Exceptional — industry-leading formulation with premium performance";
+    if(score>=90) return "✅ Excellent — high performance, production-ready formulation";
+    if(score>=85) return "👍 Very Good — solid formulation with good performance balance";
+    if(score>=80) return "✔️ Good — reliable formulation, suitable for most applications";
+    if(score>=75) return "⚠️ Average — functional but has room for optimisation";
+    return "🔧 Basic — starting point formulation, recommend AI optimisation";
+  };
+
+  const getLabel=()=>{
+    if(score>=95) return "Exceptional";
+    if(score>=90) return "Excellent";
+    if(score>=85) return "Very Good";
+    if(score>=80) return "Good";
+    if(score>=75) return "Average";
+    return "Basic";
+  };
+
   return(
-    <svg width={size} height={size} style={{transform:"rotate(-90deg)",flexShrink:0}}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1e293b" strokeWidth="4"/>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth="4" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:"all 1s"}}/>
-      <text x={size/2} y={size/2+1} textAnchor="middle" dominantBaseline="middle" fill={col} fontSize="11" fontWeight="800" style={{transform:`rotate(90deg)`,transformOrigin:`${size/2}px ${size/2}px`}}>{score}</text>
-    </svg>
+    <div style={{position:"relative",flexShrink:0,cursor:"pointer"}}
+      onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}
+      onClick={()=>setShow(v=>!v)}>
+      <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1e293b" strokeWidth="4"/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth="4" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:"all 1s"}}/>
+        <text x={size/2} y={size/2+1} textAnchor="middle" dominantBaseline="middle" fill={col} fontSize="11" fontWeight="800" style={{transform:`rotate(90deg)`,transformOrigin:`${size/2}px ${size/2}px`}}>{score}</text>
+      </svg>
+      {show&&(
+        <div style={{position:"absolute",right:0,top:size+4,background:"#0a0f1e",border:`1px solid ${col}44`,borderRadius:10,padding:"8px 12px",zIndex:100,width:200,boxShadow:"0 4px 20px #00000088",pointerEvents:"none"}}>
+          <div style={{color:col,fontWeight:700,fontSize:12,marginBottom:3}}>{score}/100 — {getLabel()}</div>
+          <div style={{color:"#94a3b8",fontSize:11,lineHeight:1.5}}>{getDesc()}</div>
+          <div style={{color:"#334155",fontSize:9,marginTop:6}}>Score based on formula balance, ingredient quality & performance potential</div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -3257,6 +3288,14 @@ export default function App(){
 
   const useQuota=(type)=>setUsage(u=>({...u,[type]:u[type]+1}));
 
+  if(!appReady) return(
+    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:36,marginBottom:12}}>⚗</div>
+        <div style={{color:"#475569",fontSize:13}}>Loading ChemForm Pro...</div>
+      </div>
+    </div>
+  );
   if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
@@ -3307,10 +3346,14 @@ export default function App(){
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
           <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden"}}>
-            {["INR","USD"].map(c=>(
-              <button key={c} onClick={()=>setCurrency(c)} style={{padding:"4px 9px",border:"none",background:currency===c?"#1e293b":"transparent",color:currency===c?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{c==="INR"?"₹ INR":"$ USD"}</button>
+            {["INR","USD"].map(cur=>(
+              <button key={cur} onClick={()=>setCurrency(cur)} style={{padding:"4px 9px",border:"none",background:currency===cur?"#1e293b":"transparent",color:currency===cur?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{cur==="INR"?"₹ INR":"$ USD"}</button>
             ))}
           </div>
+          <button onClick={()=>{try{localStorage.removeItem("chemform_user");}catch(e){}setUser(null);setSelected(null);}}
+            style={{background:"transparent",border:"1px solid #1e293b",color:"#334155",fontSize:9,fontWeight:600,padding:"4px 8px",borderRadius:6,cursor:"pointer"}}>
+            Logout
+          </button>
           <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:10,fontWeight:800,padding:"5px 11px",borderRadius:6,cursor:"pointer"}}>
             {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
           </button>
