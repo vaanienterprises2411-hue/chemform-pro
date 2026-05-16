@@ -3,6 +3,7 @@ import { sendOTP, verifyOTP, getProfile, upsertProfile, incrementUsage, setSessi
 
 // ─── Currency (all base costs stored in INR) ───────────────────────────────
 const INR_TO_USD = 1 / 83.5;
+const THEME_BLUE = "#4f9cf9";
 const fmtCur = (inr, cur) => {
   if (cur === "INR") return `₹${Number(inr).toFixed(2)}`;
   return `$${(Number(inr) * INR_TO_USD).toFixed(3)}`;
@@ -59,9 +60,11 @@ const CATEGORIES = [
   { id:"homecare",  label:"Homecare",   icon:"🧹", color:"#a78bfa" },
   { id:"inks",      label:"Inks",        icon:"🖨️", color:"#06b6d4" },
   { id:"sizing",    label:"Sizing Agents",icon:"🧵", color:"#84cc16" },
-  { id:"chemeng",   label:"ChemEng Pro", icon:"⚗️", color:"#fb923c", enterprise:true },
-  { id:"pharma",    label:"Pharma API",       icon:"💊", color:"#e879f9", paid:true },
-  { id:"request",   label:"+ Request Formula", icon:"📩", color:"#f59e0b", special:true },
+  { id:"fragrance",  label:"Fragrances",   icon:"🌸", color:"#f9a8d4" },
+  { id:"nutra",      label:"Nutraceuticals",icon:"💪", color:"#34d399" },
+  { id:"chemeng",    label:"ChemEng Pro",   icon:"⚗️", color:"#fb923c", enterprise:true },
+  { id:"pharma",     label:"Pharma API",    icon:"💊", color:"#e879f9", paid:true },
+  { id:"request",    label:"+ Request", icon:"📩", color:"#f59e0b", special:true },
 ];
 
 // ─── ALL COSTS IN INR/kg ──────────────────────────────────────────────────
@@ -1899,7 +1902,306 @@ const FORMULAS = {
       process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Request a quote for detailed technical package." },
   ],
 
-  chemeng:[
+
+  fragrance:[
+    { id:"fr1", name:"Classic Musk Accord", sub:"Warm, sensual base note blend", score:88, tags:["musk","base note","oriental"], free:true,
+      ingredients:[
+        {n:"Galaxolide 50% IPM",          p:25,  c:850},
+        {n:"Habanolide (Exaltolide)",      p:15,  c:1200},
+        {n:"Iso E Super",                  p:20,  c:600},
+        {n:"Cashmeran",                    p:10,  c:950},
+        {n:"Ethylene Brassylate",          p:15,  c:700},
+        {n:"Dipropylene Glycol (DPG)",     p:15,  c:120},
+      ],
+      process:"Musk accord blended by dissolving all aromatic ingredients in DPG at room temperature with gentle stirring for 30 min. Allow to mature 24–48 h before use. Contact us for detailed application guidelines and Process Flow Diagram.",
+      equipment:["Stainless steel blending vessel","Magnetic stirrer","Analytical balance 0.001g","GC-MS for quality check"] },
+    { id:"fr2", name:"Rose Absolute Accord", sub:"Floral heart note, Bulgarian rose character", score:91, tags:["rose","floral","heart note"], free:true,
+      ingredients:[
+        {n:"Rose Oxide",                   p:0.50,c:4500},
+        {n:"Geraniol",                     p:20,  c:800},
+        {n:"Citronellol",                  p:25,  c:650},
+        {n:"Phenyl Ethyl Alcohol",         p:30,  c:400},
+        {n:"Eugenol",                      p:5,   c:350},
+        {n:"Linalool",                     p:10,  c:500},
+        {n:"Nerol",                        p:5,   c:750},
+        {n:"Benzyl Alcohol",               p:5,   c:180},
+      ],
+      process:"Rose accord is built by careful weighing of all components in order of decreasing volatility. Rose oxide at 0.5% provides the characteristic rosy-metallic note. Blend in glass vessel, mature 48 h. Contact us for detailed SOP and PFD.",
+      equipment:["Glass blending vessel","Analytical balance","Olfactory evaluation","GC-MS analysis"] },
+    { id:"fr3", name:"Oud Wood Accord", sub:"Middle Eastern luxury, smoky resinous", score:94, tags:["oud","wood","oriental"], free:true,
+      ingredients:[
+        {n:"Agarwood Essential Oil (Oud)",  p:5,   c:25000},
+        {n:"Iso E Super",                   p:25,  c:600},
+        {n:"Cedarwood Atlas EO",            p:20,  c:450},
+        {n:"Vetiver EO",                    p:10,  c:1200},
+        {n:"Patchouli EO",                  p:10,  c:900},
+        {n:"Labdanum Absolute",             p:5,   c:3500},
+        {n:"Benzyl Benzoate",               p:15,  c:180},
+        {n:"DPG",                           p:10,  c:120},
+      ],
+      process:"Oud accord blended with cedarwood and vetiver as woody base. Labdanum provides resinous depth. High-value oud oil must be handled carefully — weigh first, add other components around it. Mature minimum 72 h for best character. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance 0.001g","Maturation storage 20°C","GC-MS"] },
+    { id:"fr4", name:"Fresh Citrus Top Note", sub:"Bright, zesty opening burst", score:85, tags:["citrus","top note","fresh"],
+      ingredients:[
+        {n:"Bergamot EO (bergapten-free)",  p:30,  c:1800},
+        {n:"Lemon EO cold-pressed",         p:25,  c:800},
+        {n:"Sweet Orange EO",               p:20,  c:350},
+        {n:"Grapefruit EO",                 p:15,  c:500},
+        {n:"Lime EO distilled",             p:5,   c:600},
+        {n:"Limonene (synthetic, >97%)",    p:5,   c:180},
+      ],
+      process:"Citrus top notes are the most volatile fraction. Blend at room temperature, avoid heat. Bergapten-free bergamot is essential for leave-on products (no phototoxicity). Use within 6 months. Contact us for detailed guidelines.",
+      equipment:["Glass vessel","Cold storage after blending","GC-MS","Stability test"] },
+    { id:"fr5", name:"Lavender Aromatic Accord", sub:"Classic fougère lavender base", score:87, tags:["lavender","aromatic","fougère"],
+      ingredients:[
+        {n:"Lavender EO (high altitude)",   p:40,  c:1500},
+        {n:"Linalool",                      p:20,  c:500},
+        {n:"Linalyl Acetate",               p:20,  c:550},
+        {n:"Coumarin",                      p:5,   c:280},
+        {n:"Dihydromyrcenol",               p:10,  c:250},
+        {n:"DPG",                           p:5,   c:120},
+      ],
+      process:"Lavender accord using natural EO boosted with key isolates. Coumarin provides the classic fougère dry-down. Blend at ambient temperature. Contact us for full SOP.",
+      equipment:["Glass blending vessel","Analytical balance","GC-MS"] },
+    { id:"fr6", name:"Sandalwood Creamy Accord", sub:"Warm, creamy, long-lasting base", score:92, tags:["sandalwood","base note","woody"],
+      ingredients:[
+        {n:"Sandalwood EO (Australian)",    p:15,  c:8000},
+        {n:"Javanol (synthetic sandalwood)",p:20,  c:2200},
+        {n:"Ebanol",                        p:15,  c:1800},
+        {n:"Santaliff",                     p:15,  c:1500},
+        {n:"Amyris EO",                     p:20,  c:600},
+        {n:"Benzyl Benzoate",               p:15,  c:180},
+      ],
+      process:"Synthetic sandalwood materials (Javanol, Ebanol) replicate and extend natural sandalwood sustainably. Blend with natural amyris as extender. Mature 48 h for smooth character. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance","GC-MS"] },
+    { id:"fr7", name:"Jasmine Floral Absolute", sub:"Indolic floral, classic white flower", score:93, tags:["jasmine","floral","absolute"],
+      ingredients:[
+        {n:"Jasmine Absolute (India)",      p:5,   c:18000},
+        {n:"Hedione (methyl dihydrojasmonate)",p:25,c:600},
+        {n:"Indole 10% DPG",               p:3,   c:800},
+        {n:"Benzyl Acetate",               p:30,  c:250},
+        {n:"Linalool",                     p:20,  c:500},
+        {n:"Phenyl Ethyl Alcohol",         p:15,  c:400},
+        {n:"Benzyl Alcohol",               p:2,   c:180},
+      ],
+      process:"Jasmine accord built around hedione as the green-floral diffusive note. Indole at low % provides natural jasmine character without overwhelming. Absolute is fixed last after maturation. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance 0.001g","GC-MS","Olfactory panel"] },
+    { id:"fr8", name:"Aquatic Marine Accord", sub:"Fresh ocean breeze, modern clean", score:86, tags:["aquatic","marine","fresh"],
+      ingredients:[
+        {n:"Calone 1951 (10% DPG)",        p:5,   c:1200},
+        {n:"Dihydromyrcenol",              p:30,  c:250},
+        {n:"Hedione",                      p:20,  c:600},
+        {n:"Iso E Super",                  p:15,  c:600},
+        {n:"Ambergris Tincture / Ambroxide",p:10, c:2200},
+        {n:"Linalool",                     p:10,  c:500},
+        {n:"DPG",                          p:10,  c:120},
+      ],
+      process:"Aquatic accord centred on Calone — use at low dosage (0.05–0.2% in final fragrance) as it is very powerful. Dihydromyrcenol provides fresh clean character. Ambroxide adds depth. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance 0.001g","GC-MS"] },
+    { id:"fr9", name:"Amber Resinous Base", sub:"Warm amber, sweet oriental base", score:90, tags:["amber","base note","oriental"],
+      ingredients:[
+        {n:"Ambroxide / Ambroxan",         p:10,  c:2200},
+        {n:"Benzyl Benzoate",              p:20,  c:180},
+        {n:"Ethylene Brassylate",          p:15,  c:700},
+        {n:"Labdanum Absolute",            p:5,   c:3500},
+        {n:"Benzaldehyde",                 p:5,   c:280},
+        {n:"Vanillin",                     p:10,  c:350},
+        {n:"Iso E Super",                  p:15,  c:600},
+        {n:"DPG",                          p:20,  c:120},
+      ],
+      process:"Amber accord using Ambroxan as the key mineral-woody note, supported by vanillin sweetness and labdanum resin. Blend at 40°C for better solubility of benzyl benzoate. Mature 48 h. Contact us for PFD.",
+      equipment:["Heated blending vessel 40°C","Analytical balance","GC-MS"] },
+    { id:"fr10", name:"Vetiver Earthy Accord", sub:"Smoky, earthy, rooty base note", score:89, tags:["vetiver","earthy","base note"],
+      ingredients:[
+        {n:"Vetiver EO (Haiti)",            p:30,  c:1200},
+        {n:"Cedarwood Atlas EO",            p:20,  c:450},
+        {n:"Iso E Super",                   p:20,  c:600},
+        {n:"Patchouli EO",                  p:10,  c:900},
+        {n:"Benzyl Benzoate",               p:10,  c:180},
+        {n:"DPG",                           p:10,  c:120},
+      ],
+      process:"Vetiver accord using Haiti vetiver for best earthy-smoky character. Iso E Super amplifies the woody facets. Patchouli adds depth and longevity. Mature 72 h for best blending. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance","GC-MS","Maturation storage"] },
+    { id:"fr11", name:"Neroli Petitgrain White Floral", sub:"Clean citrus-floral, Mediterranean", score:88, tags:["neroli","citrus","floral"],
+      ingredients:[
+        {n:"Neroli EO (Tunisia)",           p:10,  c:12000},
+        {n:"Petitgrain EO",                 p:20,  c:800},
+        {n:"Linalool",                      p:25,  c:500},
+        {n:"Linalyl Acetate",               p:20,  c:550},
+        {n:"Phenyl Ethyl Alcohol",          p:15,  c:400},
+        {n:"DPG",                           p:10,  c:120},
+      ],
+      process:"Neroli accord using precious neroli EO extended with petitgrain (from the same orange tree). Linalool and linalyl acetate provide the clean floral-citrus character at lower cost. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance 0.001g","GC-MS"] },
+    { id:"fr12", name:"Tobacco Vanilla Gourmand", sub:"Warm, smoky, addictive gourmand", score:92, tags:["tobacco","vanilla","gourmand"],
+      ingredients:[
+        {n:"Tobacco Absolute",              p:5,   c:6000},
+        {n:"Vanillin",                      p:15,  c:350},
+        {n:"Ethyl Vanillin",               p:5,   c:600},
+        {n:"Coumarin",                      p:10,  c:280},
+        {n:"Benzyl Benzoate",              p:20,  c:180},
+        {n:"Iso E Super",                   p:15,  c:600},
+        {n:"Cashmeran",                     p:10,  c:950},
+        {n:"DPG",                           p:20,  c:120},
+      ],
+      process:"Tobacco vanilla gourmand — tobacco absolute provides depth and character at low %. Vanillin and ethyl vanillin create sweetness. Coumarin adds a dry, hay-like quality. Mature 72 h for full character development. Contact us for PFD.",
+      equipment:["Glass vessel","Analytical balance","GC-MS","Maturation 72h"] },
+  ],
+
+  nutra:[
+    { id:"nt1", name:"Whey Protein Concentrate (WPC-80)", sub:"80% protein, chocolate flavour", score:90, tags:["whey","protein","WPC-80"], free:true,
+      ingredients:[
+        {n:"Whey Protein Concentrate 80%",  p:75,  c:380},
+        {n:"Cocoa Powder (10-12% fat)",     p:8,   c:180},
+        {n:"Maltodextrin DE-18",            p:10,  c:45},
+        {n:"Sucralose",                     p:0.05,c:800},
+        {n:"Soy Lecithin (instantiser)",    p:0.50,c:180},
+        {n:"Carrageenan (thickener)",       p:0.30,c:350},
+        {n:"Salt",                          p:0.50,c:5},
+        {n:"Chocolate Flavour",             p:1,   c:1200},
+        {n:"Vitamin & Mineral Premix",      p:2,   c:600},
+        {n:"Digestive Enzyme Blend",        p:0.50,c:1800},
+      ],
+      process:"Whey protein powder manufactured by dry blending of all ingredients in a ribbon blender. WPC-80 must be food-grade and tested for heavy metals and microbial limits. Soy lecithin improves instantisation (dispersibility in water). Pack in nitrogen-flushed pouches to prevent oxidation. Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender food-grade SS","Nitrogen flushing system","Pouch filling machine","Sieve 500µm","Metal detector"] },
+    { id:"nt2", name:"Plant Protein Blend (Pea + Rice)", sub:"Vegan complete protein, 75% protein", score:88, tags:["plant protein","vegan","pea protein"], free:true,
+      ingredients:[
+        {n:"Pea Protein Isolate 85%",       p:50,  c:280},
+        {n:"Brown Rice Protein 80%",        p:25,  c:220},
+        {n:"Maltodextrin DE-18",            p:10,  c:45},
+        {n:"Inulin (prebiotic)",            p:5,   c:180},
+        {n:"Sucralose",                     p:0.05,c:800},
+        {n:"Vanilla Flavour",               p:1,   c:1200},
+        {n:"Soy Lecithin",                  p:0.50,c:180},
+        {n:"Ashwagandha Extract KSM-66",    p:0.50,c:2500},
+        {n:"Vitamin B12",                   p:0.002,c:8000},
+        {n:"Iron Bisglycinate",             p:0.10,c:1200},
+      ],
+      process:"Pea and rice protein are blended in 2:1 ratio for complete amino acid profile complementarity. Pea provides lysine; rice provides methionine and cysteine. Ashwagandha adds adaptogenic benefit. Dry blend in ribbon blender, nitrogen flush, pack. Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender food-grade","Nitrogen flusher","Pouch filler","Metal detector","Microbial testing"] },
+    { id:"nt3", name:"Electrolyte Hydration Powder", sub:"ORS plus, tropical flavour, workout recovery", score:87, tags:["electrolyte","hydration","ORS"], free:true,
+      ingredients:[
+        {n:"Sodium Chloride",               p:0.87,c:5},
+        {n:"Potassium Chloride",            p:0.30,c:45},
+        {n:"Magnesium Citrate",             p:0.20,c:280},
+        {n:"Calcium Lactate",              p:0.15,c:180},
+        {n:"Dextrose Monohydrate",          p:60,  c:38},
+        {n:"Sucrose",                       p:25,  c:40},
+        {n:"Citric Acid",                   p:2,   c:60},
+        {n:"Vitamin C (Ascorbic Acid)",     p:0.50,c:180},
+        {n:"Zinc Gluconate",               p:0.10,c:450},
+        {n:"Tropical Mango Flavour",        p:1,   c:1200},
+        {n:"Sucralose",                     p:0.02,c:800},
+        {n:"Beta Carotene (colour)",        p:0.05,c:800},
+      ],
+      process:"Electrolyte powder dry blended ensuring homogeneous mineral distribution. Dextrose and sucrose ratio provides rapid and sustained energy. WHO ORS osmolarity guideline followed (~245 mOsmol/L when dissolved per serving). Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender food-grade","Sachet filling machine","Metal detector","Osmolarity check"] },
+    { id:"nt4", name:"Testosterone Booster Formula", sub:"Natural, Ashwagandha + Zinc + Fenugreek", score:85, tags:["testosterone","men health","adaptogen"],
+      ingredients:[
+        {n:"Ashwagandha Root Extract KSM-66 (5% withanolides)",p:15,c:2500},
+        {n:"Fenugreek Seed Extract (50% saponins)",           p:10,c:1800},
+        {n:"Zinc Picolinate",                                 p:2,  c:1200},
+        {n:"Vitamin D3 (Cholecalciferol)",                    p:0.10,c:3500},
+        {n:"Magnesium Bisglycinate",                          p:8,  c:400},
+        {n:"Tribulus Terrestris Extract (40% saponins)",      p:10, c:800},
+        {n:"Black Pepper Extract (Bioperine 95% piperine)",   p:0.50,c:2200},
+        {n:"Microcrystalline Cellulose (MCC)",                p:40, c:80},
+        {n:"Magnesium Stearate (lubricant)",                  p:1,  c:120},
+        {n:"HPMC Capsule Shell",                              p:5,  c:180},
+      ],
+      process:"Testosterone support supplement in capsule form. All herbal extracts must have standardised active content verified by HPLC. Blend excipients + actives in planetary mixer, encapsulate in HPMC veggie capsules. Stability testing at 40°C/75% RH mandatory. Contact us for Process Flow Diagram.",
+      equipment:["Planetary mixer","Capsule filling machine (size 0)","HPLC for standardisation","Dissolution tester","Stability chamber"] },
+    { id:"nt5", name:"Whey Protein Isolate (WPI-90)", sub:"90% protein, lactose-free, lean muscle", score:93, tags:["whey isolate","WPI","lactose-free"],
+      ingredients:[
+        {n:"Whey Protein Isolate 90%",      p:85,  c:580},
+        {n:"Maltodextrin DE-18",            p:5,   c:45},
+        {n:"Sucralose",                     p:0.05,c:800},
+        {n:"Soy Lecithin",                  p:0.50,c:180},
+        {n:"Vanilla Flavour",               p:1,   c:1200},
+        {n:"Vitamin & Mineral Premix",      p:2,   c:600},
+        {n:"L-Glutamine",                   p:2,   c:450},
+        {n:"BCAA Blend (2:1:1)",            p:3,   c:550},
+        {n:"Digestive Enzyme Blend",        p:0.50,c:1800},
+      ],
+      process:"WPI is ion-exchange or cross-flow micro-filtered for >90% protein content and near-zero lactose. Premium product requires cold-chain storage. Dry blend at low temperature. Nitrogen flush mandatory. Contact us for Process Flow Diagram.",
+      equipment:["Food-grade ribbon blender","Cold storage","Nitrogen flusher","Kjeldahl protein analyser","Metal detector"] },
+    { id:"nt6", name:"Hangover Relief Effervescent", sub:"Liver support, anti-oxidant, rehydration", score:86, tags:["hangover","effervescent","liver support"],
+      ingredients:[
+        {n:"Sodium Bicarbonate",            p:20,  c:12},
+        {n:"Citric Acid",                   p:15,  c:60},
+        {n:"Vitamin C (Ascorbic Acid)",     p:5,   c:180},
+        {n:"B-Vitamin Complex (B1,B2,B6,B12)",p:1, c:1200},
+        {n:"N-Acetyl Cysteine (NAC)",       p:3,   c:800},
+        {n:"Milk Thistle Extract (80% silymarin)",p:3,c:1500},
+        {n:"Electrolyte Blend (Na+K+Mg)",   p:5,   c:180},
+        {n:"Sucrose",                       p:30,  c:40},
+        {n:"Lemon Flavour",                 p:1,   c:1200},
+        {n:"Sucralose",                     p:0.05,c:800},
+        {n:"PEG 6000 (binder)",            p:2,   c:180},
+      ],
+      process:"Effervescent tablet manufactured by dry granulation of organic acid + bicarbonate + other ingredients separately, then blending and compression. Humidity control critical (<25% RH) throughout manufacturing. NAC and milk thistle support liver detoxification. Contact us for Process Flow Diagram.",
+      equipment:["Effervescent tablet press","Humidity controlled room <25% RH","Dissolution tester","Hardness tester","Alu-Alu blister packer"] },
+    { id:"nt7", name:"Yeast Protein Powder", sub:"Complete protein, all essential amino acids, vegan", score:84, tags:["yeast protein","vegan","complete protein"],
+      ingredients:[
+        {n:"Nutritional Yeast Protein 55%", p:70,  c:180},
+        {n:"Pea Protein Isolate",           p:15,  c:280},
+        {n:"Maltodextrin",                  p:8,   c:45},
+        {n:"Inulin",                        p:3,   c:180},
+        {n:"Flavour (cheese/unflavoured)",  p:1,   c:800},
+        {n:"Salt",                          p:0.50,c:5},
+        {n:"B-Vitamin Complex",             p:0.50,c:1200},
+      ],
+      process:"Yeast protein from Saccharomyces cerevisiae provides all essential amino acids with high digestibility. Nutty/umami flavour works well in savoury applications. Dry blend in ribbon blender. Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender food-grade","Nitrogen flusher","Kjeldahl protein analyser","Metal detector"] },
+    { id:"nt8", name:"Pre-Workout Energy Formula", sub:"Caffeine + Beta-Alanine + Citrulline, explosive energy", score:89, tags:["pre-workout","caffeine","energy"],
+      ingredients:[
+        {n:"L-Citrulline Malate 2:1",       p:20,  c:450},
+        {n:"Beta-Alanine",                  p:10,  c:350},
+        {n:"Caffeine Anhydrous",            p:1.50,c:600},
+        {n:"Creatine Monohydrate",          p:15,  c:280},
+        {n:"L-Arginine HCl",               p:5,   c:380},
+        {n:"Taurine",                       p:5,   c:350},
+        {n:"Vitamin B6",                    p:0.10,c:800},
+        {n:"Dextrose",                      p:30,  c:38},
+        {n:"Citric Acid",                   p:2,   c:60},
+        {n:"Berry Flavour",                 p:1,   c:1200},
+        {n:"Sucralose",                     p:0.05,c:800},
+      ],
+      process:"Pre-workout blend — caffeine must be accurately weighed (±0.1g) as dosage is critical. Beta-alanine causes tingling (paresthesia) — label warning required. Blend all dry ingredients, add flavour last. Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender","Analytical balance ±0.1g","Sachet filler","Metal detector","HPLC for caffeine assay"] },
+    { id:"nt9", name:"Collagen Peptide Beauty Drink", sub:"Marine collagen + Vitamin C + Hyaluronic Acid", score:91, tags:["collagen","beauty","anti-aging"],
+      ingredients:[
+        {n:"Marine Collagen Peptides (MW <3000 Da)",p:40,c:1200},
+        {n:"Vitamin C (Ascorbic Acid)",             p:5,  c:180},
+        {n:"Hyaluronic Acid (low MW)",              p:1,  c:4500},
+        {n:"Biotin",                                p:0.01,c:5000},
+        {n:"Zinc Gluconate",                        p:0.50,c:450},
+        {n:"Grape Seed Extract (OPC 95%)",          p:1,  c:2200},
+        {n:"Maltodextrin",                          p:35, c:45},
+        {n:"Strawberry Flavour",                    p:1,  c:1200},
+        {n:"Sucralose",                             p:0.05,c:800},
+        {n:"Citric Acid",                           p:2,  c:60},
+      ],
+      process:"Premium beauty supplement using hydrolysed marine collagen with low molecular weight for superior absorption. Vitamin C is essential co-factor for collagen synthesis. Hyaluronic acid for skin hydration. Dry blend, nitrogen flush, sachet pack. Contact us for Process Flow Diagram.",
+      equipment:["Ribbon blender food-grade","Nitrogen flusher","Sachet filler","HPLC for collagen verification","Metal detector"] },
+    { id:"nt10", name:"Immunity Booster Effervescent", sub:"Vitamin C + Zinc + Elderberry, daily immune support", score:88, tags:["immunity","vitamin C","zinc"],
+      ingredients:[
+        {n:"Vitamin C (Ascorbic Acid)",     p:10,  c:180},
+        {n:"Sodium Bicarbonate",            p:18,  c:12},
+        {n:"Citric Acid",                   p:14,  c:60},
+        {n:"Zinc Gluconate",               p:1,   c:450},
+        {n:"Elderberry Extract (10:1)",     p:2,   c:1800},
+        {n:"Vitamin D3",                    p:0.05,c:3500},
+        {n:"Selenium (as selenomethionine)",p:0.02,c:2500},
+        {n:"Sucrose",                       p:40,  c:40},
+        {n:"Orange Flavour",               p:1,   c:1200},
+        {n:"Sucralose",                     p:0.05,c:800},
+        {n:"PEG 6000",                     p:2,   c:180},
+      ],
+      process:"Immune support effervescent tablet. Manufacturing in low humidity (<25% RH) is critical. Elderberry extract standardised for anthocyanins. Separate granulation of acid and base phases before blending and compression. Contact us for Process Flow Diagram.",
+      equipment:["Effervescent tablet press","Humidity controlled room","Dissolution tester","Stability chamber","Alu-Alu blister packer"] },
+  ],
+    chemeng:[
     { id:"ce1", name:"PVAc Emulsion (Homopolymer, Semi-batch)", sub:"Batch emulsion polymerisation, adhesive/paint binder", score:94, tags:["PVAc","emulsion polymerisation"], free:false,
       ingredients:[
         {n:"Vinyl Acetate monomer",       p:45,  c:55},
@@ -3240,6 +3542,8 @@ function ChemEngPanel({planKey, currency}){
 export default function App(){
   const [user,setUser]=useState(null);
   const [planKey,setPlanKey]=useState("free");
+  const [isMobile,setIsMobile]=useState(window.innerWidth<768);
+  const [mobileView,setMobileView]=useState("list"); // list | detail
   const [currency,setCurrency]=useState("INR");
   const [catId,setCatId]=useState("drymix");
   const [selected,setSelected]=useState(null);
@@ -3256,6 +3560,12 @@ export default function App(){
   const isRequest=catId==="request";
   const isPharma=catId==="pharma";
   const priority=user?INDUSTRY_PRIORITY[user.industry]||[]:[];
+
+  useEffect(()=>{
+    const handleResize=()=>setIsMobile(window.innerWidth<768);
+    window.addEventListener("resize",handleResize);
+    return()=>window.removeEventListener("resize",handleResize);
+  },[]);
 
   useEffect(()=>{
     try {
@@ -3286,6 +3596,7 @@ export default function App(){
   const handleSelect=(f)=>{
     if(planKey==="free"&&!f.free){setPaywallMsg("Full Formula Library (Starter+)");return;}
     setSelected(f); setRightTab("formula");
+    if(isMobile) setMobileView("detail");
   };
 
   const handleUpgrade=(msg)=>{ setPaywallMsg(msg||null); setShowPricing(true); };
@@ -3406,7 +3717,7 @@ export default function App(){
         </div>
       ):(
         <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
-          <div style={{width:252,borderRight:"1px solid #1e293b",overflowY:"auto",padding:10,flexShrink:0,display:"flex",flexDirection:"column"}}>
+          <div style={{width:isMobile?(mobileView==="list"?"100%":"0px"):"252px",borderRight:isMobile?"none":"1px solid #1e293b",overflowY:"auto",padding:isMobile&&mobileView!=="list"?0:10,flexShrink:0,display:"flex",flexDirection:"column",transition:"width 0.3s ease",overflow:isMobile&&mobileView!=="list"?"hidden":"auto"}}>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`🔍  Search ${cat?.label||""}...`}
               style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:11,outline:"none",marginBottom:8}}/>
             {planKey==="free"&&(
@@ -3438,9 +3749,10 @@ export default function App(){
             </div>
           </div>
 
-          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,minWidth:0}}>
-            <div style={{borderBottom:"1px solid #1e293b",display:"flex",padding:"0 12px",background:"#060b14",flexShrink:0}}>
-              {[{id:"formula",l:"📋 Formula"},{id:"optimizer",l:"🤖 AI Optimize"},{id:"batch",l:"⚖️ Batch Calc"}].map(t=>(
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,minWidth:0,display:isMobile&&mobileView==="list"?"none":"flex"}}>
+            <div style={{borderBottom:"1px solid #1e293b",display:"flex",padding:"0 12px",background:"#060b14",flexShrink:0,alignItems:"center"}}>
+              {isMobile&&<button onClick={()=>{setMobileView("list");setSelected(null);}} style={{background:"none",border:"none",color:THEME_BLUE,fontSize:20,cursor:"pointer",padding:"0 8px 0 0",flexShrink:0}}>☰</button>}
+              {[{id:"formula",l:"📋 Formula"},{id:"optimizer",l:"🤖 AI"},{id:"batch",l:"⚖️ Batch"}].map(t=>(
                 <button key={t.id} onClick={()=>setRightTab(t.id)} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:rightTab===t.id?"#4f9cf9":"#475569",borderBottom:`2px solid ${rightTab===t.id?"#4f9cf9":"transparent"}`,fontWeight:rightTab===t.id?700:500,fontSize:11,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap"}}>{t.l}</button>
               ))}
             </div>
