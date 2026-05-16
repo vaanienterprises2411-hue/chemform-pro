@@ -3660,33 +3660,34 @@ export default function App(){
       )}
 
       {/* Header */}
-      <div style={{borderBottom:"1px solid #1e293b",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#060b14",flexShrink:0,gap:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-          <div style={{width:28,height:28,borderRadius:8,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>⚗</div>
-          <div>
+      <div style={{borderBottom:"1px solid #1e293b",padding:isMobile?"7px 10px":"9px 14px",display:"flex",alignItems:"center",background:"#060b14",flexShrink:0,gap:6}}>
+        {/* Logo */}
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          <div style={{width:26,height:26,borderRadius:7,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>⚗</div>
+          {!isMobile&&<div>
             <div style={{fontWeight:900,fontSize:13}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name} · {INDUSTRIES.find(i=>i.id===user.industry)?.label}</div>
-          </div>
+            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name}</div>
+          </div>}
         </div>
-        <div style={{display:"flex",gap:5,flex:1,justifyContent:"center",flexWrap:"wrap"}}>
-          <QBadge used={usage.ai} limit={plan.ai} label="AI" color="#4f9cf9"/>
-          {planKey!=="free"&&<QBadge used={usage.process} limit={plan.process} label="Process" color="#34d399"/>}
-          {planKey!=="free"&&<QBadge used={usage.equipment} limit={plan.equipment} label="Equip" color="#e8a838"/>}
+        {/* AI Badge */}
+        <QBadge used={usage.ai} limit={plan.ai} label="AI" color="#4f9cf9"/>
+        {/* Spacer */}
+        <div style={{flex:1}}/>
+        {/* Currency toggle */}
+        <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden",flexShrink:0}}>
+          {["INR","USD"].map(cur=>(
+            <button key={cur} onClick={()=>setCurrency(cur)} style={{padding:"4px 7px",border:"none",background:currency===cur?"#1e293b":"transparent",color:currency===cur?"#f1f5f9":"#475569",fontSize:9,fontWeight:700,cursor:"pointer"}}>{cur==="INR"?"₹":"$"}</button>
+          ))}
         </div>
-        <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
-          <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden"}}>
-            {["INR","USD"].map(cur=>(
-              <button key={cur} onClick={()=>setCurrency(cur)} style={{padding:"4px 9px",border:"none",background:currency===cur?"#1e293b":"transparent",color:currency===cur?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{cur==="INR"?"₹ INR":"$ USD"}</button>
-            ))}
-          </div>
-          <button onClick={()=>{try{window.localStorage && window.localStorage.removeItem("chemform_user");}catch(e){}setUser(null);setSelected(null);}}
-            style={{background:"transparent",border:"1px solid #1e293b",color:"#334155",fontSize:9,fontWeight:600,padding:"4px 8px",borderRadius:6,cursor:"pointer"}}>
-            Logout
-          </button>
-          <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:10,fontWeight:800,padding:"5px 11px",borderRadius:6,cursor:"pointer"}}>
-            {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
-          </button>
-        </div>
+        {/* Upgrade button */}
+        <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:9,fontWeight:800,padding:"5px 8px",borderRadius:6,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+          {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
+        </button>
+        {/* Logout */}
+        <button onClick={()=>{try{window.localStorage&&window.localStorage.removeItem("chemform_user");}catch(e){}setUser(null);setSelected(null);}}
+          style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",fontSize:9,fontWeight:600,padding:"5px 7px",borderRadius:6,cursor:"pointer",flexShrink:0}}>
+          ⏏
+        </button>
       </div>
 
       {/* Category tabs */}
