@@ -3608,6 +3608,32 @@ export default function App(){
   const [paymentPortal,setPaymentPortal]=useState(null); 
   const [appReady,setAppReady]=useState(false);// {plan, currency}
 
+  // Rolling 30-day usage tracking
+  const getUsageData=()=>{
+    try{
+      const saved=window.localStorage&&window.localStorage.getItem("chemform_usage");
+      if(saved){
+        const data=JSON.parse(saved);
+        const daysSince=(Date.now()-data.startDate)/(1000*60*60*24);
+        if(daysSince<30) return data; // still within 30-day window
+      }
+    }catch(e){}
+    // Start fresh 30-day window
+    return {ai:0,process:0,equipment:0,startDate:Date.now()};
+  };
+  const loadUsage=()=>{
+    const d=getUsageData();
+    return {ai:d.ai,process:d.process,equipment:d.equipment};
+  };
+  const saveUsage=(u)=>{
+    try{
+      const current=getUsageData();
+      window.localStorage&&window.localStorage.setItem("chemform_usage",
+        JSON.stringify({...u,startDate:current.startDate})
+      );
+    }catch(e){}
+  };
+
   const plan=PLANS[planKey];
   const isChemEng=catId==="chemeng";
   const isRequest=catId==="request";
@@ -3618,6 +3644,11 @@ export default function App(){
     const handleResize=()=>setIsMobile(window.innerWidth<768);
     window.addEventListener("resize",handleResize);
     return()=>window.removeEventListener("resize",handleResize);
+  },[]);
+
+  useEffect(()=>{
+    // Load saved usage for current month
+    setUsage(loadUsage());
   },[]);
 
   useEffect(()=>{
@@ -3668,7 +3699,11 @@ export default function App(){
     setPaywallMsg(null);
   };
 
-  const useQuota=(type)=>setUsage(u=>({...u,[type]:u[type]+1}));
+  const useQuota=async(type)=>{
+    const newUsage={...usage,[type]:usage[type]+1};
+    setUsage(newUsage);
+    saveUsage(newUsage);
+  };
 
   if(!appReady) return(
     <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center"}}>
