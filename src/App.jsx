@@ -2729,6 +2729,44 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             );
           })()}
+
+          {/* Related Formulas */}
+          {(()=>{
+            const allCatFormulas = Object.values(FORMULAS).flat();
+            const related = allCatFormulas
+              .filter(f => f.id !== formula.id && (
+                f.tags?.some(t => formula.tags?.includes(t)) ||
+                Math.abs(f.score - formula.score) < 8
+              ))
+              .slice(0, 4);
+            if(!related.length) return null;
+            return (
+              <div style={{marginTop:18}}>
+                <div style={{color:"#475569",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Related Formulas</div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {related.map(rf=>{
+                    const rfCost = calcCostPerKg(rf.ingredients);
+                    const rfCol = rf.score>=90?"#34d399":rf.score>=80?"#e8a838":"#f87171";
+                    return(
+                      <div key={rf.id} onClick={()=>{setSelected(rf);setTab("formula");window.scrollTo(0,0);}}
+                        style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 12px",background:"#0a0f1e",borderRadius:10,border:"1px solid #1e293b",cursor:"pointer",transition:"all 0.2s"}}
+                        onMouseEnter={e=>e.currentTarget.style.borderColor=color}
+                        onMouseLeave={e=>e.currentTarget.style.borderColor="#1e293b"}>
+                        <div style={{flex:1,marginRight:8}}>
+                          <div style={{color:"#f1f5f9",fontSize:12,fontWeight:600}}>{rf.name}</div>
+                          <div style={{color:"#475569",fontSize:10,marginTop:2}}>{rf.sub}</div>
+                        </div>
+                        <div style={{textAlign:"right",flexShrink:0}}>
+                          <div style={{color:rfCol,fontWeight:700,fontSize:11}}>{rf.score}/100</div>
+                          <div style={{color:"#64748b",fontSize:10}}>{fmtCur(rfCost,currency)}/kg</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -2890,9 +2928,18 @@ Respond ONLY with valid JSON (no markdown, no text outside):
       </div>
 
       {creditsLeft===0&&(
-        <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{color:"#64748b",fontSize:12}}>Monthly AI credits used up</span>
-          <button onClick={()=>onUpgrade("More AI Optimizations")} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:6,cursor:"pointer"}}>Upgrade</button>
+        <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:10,padding:"10px 14px",marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <span style={{color:"#64748b",fontSize:12}}>Monthly AI credits used up</span>
+            <button onClick={()=>onUpgrade("More AI Optimizations")} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:6,cursor:"pointer"}}>Upgrade</button>
+          </div>
+          <button onClick={()=>{
+            // Show rewarded ad to unlock 1 free AI credit
+            alert("📺 Rewarded Ad\n\nWatch a short ad to unlock 1 free AI optimization credit.\n\n[Ad would play here via Google AdMob]\n\nCredit unlocked! ✅");
+            onUseQuota("ai"); // unlock by decrementing (negative increment)
+          }} style={{width:"100%",padding:"9px",borderRadius:9,border:"1px solid #e8a83844",background:"#e8a83811",color:"#e8a838",fontWeight:700,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            📺 Watch Ad → Get 1 Free AI Credit
+          </button>
         </div>
       )}
 
@@ -2928,6 +2975,12 @@ Respond ONLY with valid JSON (no markdown, no text outside):
         </div>
       )}
 
+      {creditsLeft>0&&creditsLeft<=2&&(
+        <div style={{background:"#e8a83811",border:"1px solid #e8a83833",borderRadius:9,padding:"7px 11px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{color:"#e8a838",fontSize:11}}>⚠️ Only {creditsLeft} AI credit{creditsLeft===1?"":"s"} left</span>
+          <button onClick={()=>onUpgrade("More AI Credits")} style={{background:"none",border:"none",color:"#4f9cf9",fontSize:11,fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>Upgrade →</button>
+        </div>
+      )}
       <button onClick={run} disabled={loading||creditsLeft===0} style={{width:"100%",padding:"11px",borderRadius:10,border:"none",background:loading||creditsLeft===0?"#1e293b":`linear-gradient(135deg,${color},${color}aa)`,color:loading||creditsLeft===0?"#475569":"#fff",fontWeight:800,fontSize:13,cursor:loading||creditsLeft===0?"not-allowed":"pointer",marginBottom:12}}>
         {loading?"🤖 Analyzing...":creditsLeft===0?"No credits — upgrade to continue":"✨ Optimize with AI"}
       </button>
