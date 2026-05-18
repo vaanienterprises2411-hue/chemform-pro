@@ -2472,7 +2472,7 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
       </div>
     </div>
   );
-}
+
 
 // ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
