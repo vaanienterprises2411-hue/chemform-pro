@@ -2337,9 +2337,79 @@ function Ring({score, size=44}){
 }
 
 // ─── Payment Redirect Simulation ───────────────────────────────────────────
-function PaymentPortal({plan, currency, onSuccess, onCancel}){
-  const [step, setStep]=useState("confirm"); // confirm | processing | done
-  const price = currency==="INR" ? `₹${plan.inr}/mo` : `$${plan.usd}/mo`;
+function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
+  const [step, setStep]=useState("confirm");
+  const price = currency==="INR" ? `₹${plan.inr}` : `$${plan.usd}`;
+
+  // Razorpay payment links — one per plan
+  const PAYMENT_LINKS = {
+    starter:    "https://rzp.io/rzp/wHUdBhlo",
+    pro:        "https://rzp.io/rzp/ucbDbagi",
+    enterprise: "https://rzp.io/rzp/qf06LtZs",
+  };
+
+  const handlePay=()=>{
+    const link = PAYMENT_LINKS[plan.key||Object.keys(PLANS).find(k=>PLANS[k].inr===plan.inr)];
+    if(link){
+      window.open(link, "_blank");
+      setStep("pending");
+    }
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%",textAlign:"center"}}>
+        {step==="confirm"&&<>
+          <div style={{fontSize:36,marginBottom:10}}>💳</div>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Activate {plan.name} Plan</div>
+          <div style={{color:plan.color,fontWeight:900,fontSize:32,marginBottom:4}}>{price}</div>
+          <div style={{color:"#475569",fontSize:12,marginBottom:4}}>Valid for 30 days from payment date</div>
+          <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",marginBottom:16,textAlign:"left"}}>
+            {["30-day access from payment date","Reminder email sent 3 days before expiry","Renew anytime to continue access","Cancel anytime — no auto-debit","All features unlock immediately after payment"].map(f=>(
+              <div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,display:"flex",gap:6}}>
+                <span style={{color:plan.color,flexShrink:0}}>✓</span>{f}
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:9}}>
+            <button onClick={onCancel} style={{flex:1,padding:"11px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Back</button>
+            <button onClick={handlePay} style={{flex:2,padding:"11px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+              Pay {price} via Razorpay →
+            </button>
+          </div>
+          <div style={{color:"#334155",fontSize:10,marginTop:10}}>🔒 UPI · Cards · Net Banking · Wallets · Secure</div>
+        </>}
+        {step==="pending"&&<>
+          <div style={{fontSize:44,marginBottom:14}}>🔗</div>
+          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment</div>
+          <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20}}>
+            Razorpay payment page has opened in a new tab.<br/>
+            Complete payment there, then come back here and click <strong style={{color:"#34d399"}}>I've Paid</strong> below.
+          </div>
+          <button onClick={()=>setStep("done")} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
+            ✅ I've Paid — Activate My Plan
+          </button>
+          <button onClick={handlePay} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:12,cursor:"pointer",marginBottom:8}}>
+            🔗 Reopen Payment Link
+          </button>
+          <button onClick={onCancel} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer"}}>Cancel</button>
+        </>}
+        {step==="done"&&<>
+          <div style={{fontSize:44,marginBottom:10}}>🎉</div>
+          <div style={{color:"#34d399",fontWeight:900,fontSize:18,marginBottom:8}}>Plan Activated!</div>
+          <div style={{color:"#64748b",fontSize:13,lineHeight:1.7}}>
+            Welcome to <span style={{color:plan.color,fontWeight:700}}>{plan.name}</span>!<br/>
+            Valid for 30 days.<br/>
+            You'll receive a reminder email 3 days before expiry.
+          </div>
+          <button onClick={()=>onSuccess({})} style={{marginTop:16,width:"100%",padding:"12px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+            Start Using {plan.name} →
+          </button>
+        </>}
+      </div>
+    </div>
+  );
+}
 
   useEffect(()=>{
     if(step==="processing"){
@@ -2406,6 +2476,7 @@ function PaymentPortal({plan, currency, onSuccess, onCancel}){
 
 // ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
+  const [showForm,setShowForm]=useState(false);
   const [name,setName]=useState("");
   const [email,setEmail]=useState("");
   const [city,setCity]=useState("");
@@ -2419,7 +2490,6 @@ function LoginScreen({onLogin}){
     if(!email.trim()||!email.includes("@")){setErr("Please enter a valid email");return;}
     if(!industry){setErr("Please select your industry");return;}
     setLoading(true);
-    // Save to Supabase profiles table
     try {
       await fetch("https://zpuzqnitczhgllgohrba.supabase.co/rest/v1/profiles", {
         method:"POST",
@@ -2431,75 +2501,216 @@ function LoginScreen({onLogin}){
         },
         body:JSON.stringify({email:email.trim(),name:name.trim(),city,country,industry,plan:"free"}),
       });
-    } catch(e){ console.log("Supabase save error:",e); }
+    } catch(e){}
     setLoading(false);
     onLogin({name:name.trim(),email:email.trim(),city,country,industry,plan:"free"});
   };
 
+  // ── Landing Page ──
+  if(!showForm) return(
+    <div style={{minHeight:"100vh",background:"#060b14",color:"#f1f5f9",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
+
+      {/* Nav */}
+      <div style={{borderBottom:"1px solid #1e293b",padding:"14px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#060b14",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:34,height:34,borderRadius:9,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⚗</div>
+          <div>
+            <div style={{fontWeight:900,fontSize:16}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
+            <div style={{fontSize:9,color:"#475569",letterSpacing:"0.05em"}}>BY VAANI ENTERPRISES</div>
+          </div>
+        </div>
+        <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:700,fontSize:13,padding:"9px 20px",borderRadius:9,cursor:"pointer"}}>
+          Get Started Free →
+        </button>
+      </div>
+
+      {/* Hero */}
+      <div style={{textAlign:"center",padding:"60px 20px 40px",maxWidth:800,margin:"0 auto"}}>
+        <div style={{display:"inline-block",background:"#4f9cf922",border:"1px solid #4f9cf944",borderRadius:99,padding:"5px 16px",fontSize:12,color:"#4f9cf9",fontWeight:600,marginBottom:20}}>
+          🚀 India's First AI Chemical Formulation Platform
+        </div>
+        <h1 style={{fontSize:"clamp(28px,6vw,52px)",fontWeight:900,lineHeight:1.15,marginBottom:16,background:"linear-gradient(135deg,#f1f5f9,#94a3b8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+          Professional Chemical Formulations<br/>Powered by AI
+        </h1>
+        <p style={{color:"#64748b",fontSize:"clamp(14px,2vw,18px)",lineHeight:1.7,marginBottom:32,maxWidth:600,margin:"0 auto 32px"}}>
+          Access 250+ expert-verified formulations for paints, coatings, adhesives, cosmetics, fragrances, nutraceuticals and more. Optimise cost and performance with AI in seconds.
+        </p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:16}}>
+          <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"14px 32px",borderRadius:12,cursor:"pointer"}}>
+            Start Free — No Card Required
+          </button>
+          <button onClick={()=>setShowForm(true)} style={{background:"transparent",border:"1px solid #1e293b",color:"#94a3b8",fontWeight:600,fontSize:14,padding:"14px 24px",borderRadius:12,cursor:"pointer"}}>
+            View Plans →
+          </button>
+        </div>
+        <div style={{color:"#334155",fontSize:12}}>✓ Free forever plan &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ 250+ formulations</div>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:"flex",justifyContent:"center",gap:"clamp(20px,4vw,60px)",padding:"30px 20px",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",flexWrap:"wrap",background:"#0a0f1e"}}>
+        {[
+          {n:"250+",l:"Formulations"},
+          {n:"13",l:"Categories"},
+          {n:"195",l:"Pharma APIs"},
+          {n:"AI",l:"Optimizer"},
+          {n:"Free",l:"To Start"},
+        ].map(s=>(
+          <div key={s.l} style={{textAlign:"center"}}>
+            <div style={{color:"#4f9cf9",fontWeight:900,fontSize:"clamp(22px,4vw,32px)"}}>{s.n}</div>
+            <div style={{color:"#475569",fontSize:12,marginTop:2}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Categories */}
+      <div style={{padding:"50px 20px",maxWidth:900,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Every Chemical Industry Covered</h2>
+          <p style={{color:"#64748b",fontSize:14}}>From construction chemicals to luxury fragrances — professional formulations verified by industry experts</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10}}>
+          {[
+            {icon:"🏗️",label:"Drymix & Construction",desc:"Tile adhesive, grout, plaster, putty"},
+            {icon:"🎨",label:"Paints & Emulsions",desc:"Interior, exterior, enamel, distemper"},
+            {icon:"🛡️",label:"Coatings",desc:"Epoxy, PU, powder, stoving"},
+            {icon:"🔗",label:"Adhesives",desc:"PU, epoxy, PSA, silicone, rubber"},
+            {icon:"✨",label:"Cosmetics",desc:"Shampoo, cream, soap, toothpaste"},
+            {icon:"🧹",label:"Homecare",desc:"Dishwash, floor cleaner, detergent"},
+            {icon:"🖨️",label:"Inks",desc:"Flexo, gravure, offset, UV, inkjet"},
+            {icon:"🧵",label:"Sizing Agents",desc:"Warp sizing, paper sizing, softener"},
+            {icon:"🌸",label:"Fragrances",desc:"Musk, rose, oud, jasmine, amber"},
+            {icon:"💪",label:"Nutraceuticals",desc:"Whey, electrolytes, collagen, pre-workout"},
+            {icon:"💊",label:"Pharma API",desc:"195 active pharmaceutical ingredients"},
+            {icon:"⚗️",label:"ChemEng Pro",desc:"Resin synthesis, polymerisation"},
+          ].map(cat=>(
+            <div key={cat.label} style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:"14px 12px",textAlign:"center",transition:"all 0.2s",cursor:"pointer"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="#4f9cf944";e.currentTarget.style.background="#0d1626";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="#1e293b";e.currentTarget.style.background="#0a0f1e";}}>
+              <div style={{fontSize:24,marginBottom:6}}>{cat.icon}</div>
+              <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:3}}>{cat.label}</div>
+              <div style={{color:"#334155",fontSize:10,lineHeight:1.4}}>{cat.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Features */}
+      <div style={{background:"#0a0f1e",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",padding:"50px 20px"}}>
+        <div style={{maxWidth:900,margin:"0 auto"}}>
+          <h2 style={{textAlign:"center",color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:32}}>Everything a Formulator Needs</h2>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:16}}>
+            {[
+              {icon:"🤖",title:"AI Formula Optimizer",desc:"Reduce raw material cost or maximise performance with one click. AI analyses your formula and suggests specific ingredient changes with technical justification."},
+              {icon:"⚖️",title:"Batch Calculator",desc:"Enter your batch size and local RM prices. Get exact quantities and total cost for any batch size — kg, MT, or lbs."},
+              {icon:"✏️",title:"Live RM Price Editor",desc:"Enter your local raw material prices and see the formula cost update instantly. Compare your cost vs industry benchmark."},
+              {icon:"📊",title:"Performance Scores",desc:"Every formula has a 0-100 performance score. Hover/tap to understand what the score means for your application."},
+              {icon:"⚙️",title:"Manufacturing Process",desc:"Step-by-step manufacturing process, equipment list, and process flow diagram available for every formulation."},
+              {icon:"📩",title:"Custom Formulation Requests",desc:"Can't find what you need? Request any formulation. Our expert team delivers within 24 hours."},
+            ].map(f=>(
+              <div key={f.title} style={{padding:"18px",background:"#060b14",borderRadius:12,border:"1px solid #1e293b"}}>
+                <div style={{fontSize:28,marginBottom:10}}>{f.icon}</div>
+                <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:6}}>{f.title}</div>
+                <div style={{color:"#64748b",fontSize:12,lineHeight:1.6}}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing preview */}
+      <div style={{padding:"50px 20px",maxWidth:900,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Simple, Transparent Pricing</h2>
+        <p style={{color:"#64748b",fontSize:14,marginBottom:32}}>Start free. Upgrade when you need more.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:32}}>
+          {[
+            {name:"Free",price:"₹0",color:"#64748b",features:["3 formulas/category","3 AI optimizations","Batch calculator","Ads shown"]},
+            {name:"Starter",price:"₹749/mo",color:"#34d399",features:["All formulas","10 AI optimizations","Process & equipment","No ads"]},
+            {name:"Pro",price:"₹2,399/mo",color:"#4f9cf9",features:["All formulas","50 AI optimizations","Engineering design","Free formula requests"],highlight:true},
+            {name:"Enterprise",price:"₹8,249/mo",color:"#a78bfa",features:["Unlimited everything","ChemEng Pro","Detailed engineering","Unlimited requests"]},
+          ].map(p=>(
+            <div key={p.name} style={{background:p.highlight?"#0d1628":"#0a0f1e",border:`1px solid ${p.color}${p.highlight?"":"33"}`,borderRadius:14,padding:"18px 14px"}}>
+              {p.highlight&&<div style={{color:p.color,fontSize:9,fontWeight:800,letterSpacing:"0.08em",marginBottom:6}}>⭐ MOST POPULAR</div>}
+              <div style={{color:p.color,fontWeight:900,fontSize:16,marginBottom:4}}>{p.name}</div>
+              <div style={{color:"#f1f5f9",fontWeight:900,fontSize:22,marginBottom:12}}>{p.price}</div>
+              {p.features.map(f=><div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,textAlign:"left"}}>✓ {f}</div>)}
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"14px 40px",borderRadius:12,cursor:"pointer"}}>
+          Start Free Today →
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{borderTop:"1px solid #1e293b",padding:"24px",textAlign:"center",background:"#0a0f1e"}}>
+        <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:4}}>ChemForm Pro by Vaani Enterprises</div>
+        <div style={{color:"#334155",fontSize:12,marginBottom:8}}>India's leading AI chemical formulation platform</div>
+        <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
+          <a href="/privacy.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Privacy Policy</a>
+          <a href="/terms.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Terms of Service</a>
+          <a href="mailto:vaanienterprises2411@gmail.com" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Contact Us</a>
+        </div>
+        <div style={{color:"#1e293b",fontSize:10,marginTop:12}}>
+          Chemical formulation software · Paint formulation · Coating formulation · Adhesive formulation · Cosmetic formulation · Fragrance formulation · Nutraceutical formulation · Pharma API · Construction chemicals · Drymix formulation · India
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Registration Form ──
   return(
-    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16,overflowY:"auto"}}>
+    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16,overflowY:"auto",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24,maxWidth:420,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:16}}>
           <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 10px"}}>⚗</div>
           <div style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-          <div style={{color:"#475569",fontSize:12,marginTop:3}}>AI Formulation Platform · Free to start</div>
+          <div style={{color:"#475569",fontSize:12,marginTop:3}}>Create your free account</div>
         </div>
-
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <div>
             <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Your Name *</div>
-            <input value={name} onChange={e=>setName(e.target.value)}
-              placeholder="Full name"
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name"
               style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-
           <div>
             <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Work Email *</div>
-            <input value={email} onChange={e=>setEmail(e.target.value)}
-              placeholder="you@company.com"
-              type="email"
+            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" type="email"
               style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-
           <div style={{display:"flex",gap:8}}>
             <div style={{flex:1}}>
               <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>City</div>
-              <input value={city} onChange={e=>setCity(e.target.value)}
-                placeholder="City"
+              <input value={city} onChange={e=>setCity(e.target.value)} placeholder="City"
                 style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
             </div>
             <div style={{flex:1}}>
               <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Country</div>
-              <input value={country} onChange={e=>setCountry(e.target.value)}
-                placeholder="Country"
+              <input value={country} onChange={e=>setCountry(e.target.value)} placeholder="Country"
                 style={{width:"100%",background:"#060b14",border:"1px solid #1e293b",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
             </div>
           </div>
-
           <div>
-            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Your Industry * <span style={{color:"#334155",fontWeight:400,textTransform:"none",fontSize:10}}>(personalises your experience)</span></div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Your Industry *</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
               {INDUSTRIES.map(ind=>(
                 <div key={ind.id} onClick={()=>setIndustry(ind.id)}
-                  style={{padding:"8px 10px",borderRadius:9,border:`1px solid ${industry===ind.id?"#4f9cf9":"#1e293b"}`,background:industry===ind.id?"#4f9cf915":"#060b14",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:14}}>{ind.icon}</span>
+                  style={{padding:"7px 10px",borderRadius:9,border:`1px solid ${industry===ind.id?"#4f9cf9":"#1e293b"}`,background:industry===ind.id?"#4f9cf915":"#060b14",cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:13}}>{ind.icon}</span>
                   <span style={{color:industry===ind.id?"#4f9cf9":"#64748b",fontSize:10,fontWeight:600,lineHeight:1.3}}>{ind.label}</span>
                 </div>
               ))}
             </div>
           </div>
-
           {err&&<div style={{color:"#f87171",fontSize:12,padding:"8px 12px",background:"#f8717111",borderRadius:8}}>{err}</div>}
-
           <button onClick={handleStart} disabled={loading}
             style={{padding:"13px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"wait":"pointer",marginTop:4}}>
             {loading?"Saving...":"Start Using ChemForm Pro →"}
           </button>
-
           <div style={{textAlign:"center",color:"#334155",fontSize:11}}>
-            Free plan · No credit card · No password needed<br/>
-            Your data is stored securely and never shared
+            Free plan · No credit card · No password needed
           </div>
+          <button onClick={()=>setShowForm(false)} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>← Back to home</button>
         </div>
       </div>
     </div>
@@ -3729,7 +3940,7 @@ export default function App(){
       `}</style>
 
       {/* Payment Portal */}
-      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} currency={currency} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
+      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} currency={currency} user={user} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
 
       {/* Pricing Modal */}
       {showPricing&&!paymentPortal&&<PricingModal onClose={()=>{setShowPricing(false);setPaywallMsg(null);}} currency={currency} onSelectPlan={handleSelectPlan}/>}
