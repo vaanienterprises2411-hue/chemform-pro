@@ -2337,53 +2337,58 @@ function Ring({score, size=44}){
 }
 
 // ─── Payment Portal ───────────────────────────────────────────────────────
-function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
+function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
   const [step,setStep]=useState("confirm");
+  const [txnId,setTxnId]=useState("");
+  const [err,setErr]=useState("");
   const price = currency==="INR" ? `₹${plan.inr}` : `$${plan.usd}`;
   const PAYMENT_LINKS = {
     starter:    "https://rzp.io/rzp/wHUdBhlo",
     pro:        "https://rzp.io/rzp/ucbDbagi",
     enterprise: "https://rzp.io/rzp/qf06LtZs",
   };
-  const planKey = Object.keys(PLANS).find(k=>PLANS[k].inr===plan.inr)||"starter";
   const handlePay=()=>{
-    window.open(PAYMENT_LINKS[planKey],"_blank");
-    setStep("pending");
+    const link = PAYMENT_LINKS[planKey];
+    if(link){ window.open(link,"_blank"); setStep("pending"); }
+  };
+  const handleVerify=()=>{
+    if(!txnId.trim()||txnId.trim().length<6){
+      setErr("Enter your Razorpay Payment ID from the confirmation SMS/email");
+      return;
+    }
+    setErr(""); setStep("done");
   };
   return(
     <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%",textAlign:"center"}}>
+      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:400,width:"100%",textAlign:"center"}}>
         {step==="confirm"&&<>
           <div style={{fontSize:36,marginBottom:10}}>💳</div>
           <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Activate {plan.name} Plan</div>
           <div style={{color:plan.color,fontWeight:900,fontSize:32,marginBottom:4}}>{price}</div>
-          <div style={{color:"#475569",fontSize:12,marginBottom:4}}>Valid for 30 days from payment date</div>
-          <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",marginBottom:16,textAlign:"left"}}>
-            {["30-day access from payment date","Reminder email 3 days before expiry","Renew anytime to continue access","No auto-debit ever","All features unlock immediately"].map(f=>(
-              <div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,display:"flex",gap:6}}>
-                <span style={{color:plan.color,flexShrink:0}}>✓</span>{f}
-              </div>
-            ))}
-          </div>
+          <div style={{color:"#475569",fontSize:12,marginBottom:12}}>Valid for 30 days · No auto-debit · Reminder email 3 days before expiry</div>
           <div style={{display:"flex",gap:9}}>
             <button onClick={onCancel} style={{flex:1,padding:"11px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Back</button>
             <button onClick={handlePay} style={{flex:2,padding:"11px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
               Pay {price} via Razorpay →
             </button>
           </div>
-          <div style={{color:"#334155",fontSize:10,marginTop:10}}>🔒 UPI · Cards · Net Banking · Wallets · Secure</div>
+          <div style={{color:"#334155",fontSize:10,marginTop:10}}>🔒 UPI · Cards · Net Banking · Wallets</div>
         </>}
         {step==="pending"&&<>
           <div style={{fontSize:44,marginBottom:14}}>🔗</div>
-          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment</div>
-          <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20}}>
-            Razorpay page opened in a new tab.<br/>
-            Complete payment there, then click <strong style={{color:"#34d399"}}>I've Paid</strong> below.
+          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment on Razorpay</div>
+          <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>After paying, enter your Payment ID from the Razorpay confirmation SMS/email to verify and activate your plan.</div>
+          <div style={{textAlign:"left",marginBottom:10}}>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,letterSpacing:"0.08em",marginBottom:6,textTransform:"uppercase"}}>Razorpay Payment ID *</div>
+            <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder="pay_xxxxxxxxxxxxxxxxx"
+              style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            <div style={{color:"#334155",fontSize:10,marginTop:4}}>From Razorpay payment confirmation SMS or email</div>
           </div>
-          <button onClick={()=>setStep("done")} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
-            ✅ I've Paid — Activate My Plan
+          {err&&<div style={{color:"#f87171",fontSize:11,padding:"8px 12px",background:"#f8717111",borderRadius:8,marginBottom:8,textAlign:"left"}}>{err}</div>}
+          <button onClick={handleVerify} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
+            ✅ Verify & Activate Plan
           </button>
-          <button onClick={handlePay} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:12,cursor:"pointer",marginBottom:8}}>
+          <button onClick={handlePay} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:8}}>
             🔗 Reopen Payment Link
           </button>
           <button onClick={onCancel} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer"}}>Cancel</button>
@@ -2391,11 +2396,12 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
         {step==="done"&&<>
           <div style={{fontSize:44,marginBottom:10}}>🎉</div>
           <div style={{color:"#34d399",fontWeight:900,fontSize:18,marginBottom:8}}>Plan Activated!</div>
-          <div style={{color:"#64748b",fontSize:13,lineHeight:1.7}}>
+          <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:4}}>
             Welcome to <span style={{color:plan.color,fontWeight:700}}>{plan.name}</span>!<br/>
-            Valid for 30 days. Reminder email 3 days before expiry.
+            Valid for 30 days. Reminder 3 days before expiry.
           </div>
-          <button onClick={()=>onSuccess({})} style={{marginTop:16,width:"100%",padding:"12px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+          <div style={{color:"#334155",fontSize:10,marginBottom:14}}>Ref: {txnId}</div>
+          <button onClick={()=>onSuccess({txnId})} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
             Start Using {plan.name} →
           </button>
         </>}
@@ -3870,7 +3876,7 @@ export default function App(){
       `}</style>
 
       {/* Payment Portal */}
-      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} currency={currency} user={user} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
+      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} planKey={paymentPortal.key} currency={currency} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
 
       {/* Pricing Modal */}
       {showPricing&&!paymentPortal&&<PricingModal onClose={()=>{setShowPricing(false);setPaywallMsg(null);}} currency={currency} onSelectPlan={handleSelectPlan}/>}
