@@ -2397,7 +2397,7 @@ function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
             <div style={{color:"#64748b",fontSize:11,marginBottom:4}}>📧 Payment ID not received?</div>
             <div style={{color:"#334155",fontSize:10,lineHeight:1.5}}>
               Check your spam folder · Wait 2-3 minutes · 
-              Or email <a href="mailto:vaanienterprises2411@gmail.com" style={{color:"#4f9cf9",textDecoration:"none"}}>vaanienterprises2411@gmail.com</a> with your payment screenshot and we'll activate manually within 1 hour.
+              Or email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your payment screenshot and we'll activate manually within 1 hour.
             </div>
           </div>
           <button onClick={onCancel} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer"}}>Cancel</button>
@@ -2594,7 +2594,7 @@ function LoginScreen({onLogin}){
         <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
           <a href="/privacy.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Privacy Policy</a>
           <a href="/terms.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Terms of Service</a>
-          <a href="mailto:vaanienterprises2411@gmail.com" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Contact Us</a>
+          <a href="mailto:info@chemformpro.in" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Contact Us</a>
         </div>
         <div style={{color:"#1e293b",fontSize:10,marginTop:12}}>
           Chemical formulation software · Paint formulation · Coating formulation · Adhesive formulation · Cosmetic formulation · Fragrance formulation · Nutraceutical formulation · Pharma API · Construction chemicals · Drymix formulation · India
