@@ -2343,9 +2343,9 @@ function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
   const [err,setErr]=useState("");
   const price = currency==="INR" ? `₹${plan.inr}` : `$${plan.usd}`;
   const PAYMENT_LINKS = {
-    starter:    "https://rzp.io/rzp/wHUdBhlo",
+    starter:    "https://rzp.io/rzp/qf06LtZs",
     pro:        "https://rzp.io/rzp/ucbDbagi",
-    enterprise: "https://rzp.io/rzp/qf06LtZs",
+    enterprise: "https://rzp.io/rzp/wHUdBhlo",
   };
   const handlePay=()=>{
     const link = PAYMENT_LINKS[planKey];
@@ -2377,12 +2377,14 @@ function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
         {step==="pending"&&<>
           <div style={{fontSize:44,marginBottom:14}}>🔗</div>
           <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment on Razorpay</div>
-          <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>After paying, enter your Payment ID from the Razorpay confirmation SMS/email to verify and activate your plan.</div>
+          <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>
+            After paying, enter your Razorpay Payment ID from the confirmation SMS/email to activate.<br/>
+            <span style={{color:"#334155"}}>It looks like: pay_xxxxxxxxxxxxxxxxx</span>
+          </div>
           <div style={{textAlign:"left",marginBottom:10}}>
-            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,letterSpacing:"0.08em",marginBottom:6,textTransform:"uppercase"}}>Razorpay Payment ID *</div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,letterSpacing:"0.08em",marginBottom:6,textTransform:"uppercase"}}>Payment ID *</div>
             <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder="pay_xxxxxxxxxxxxxxxxx"
               style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-            <div style={{color:"#334155",fontSize:10,marginTop:4}}>From Razorpay payment confirmation SMS or email</div>
           </div>
           {err&&<div style={{color:"#f87171",fontSize:11,padding:"8px 12px",background:"#f8717111",borderRadius:8,marginBottom:8,textAlign:"left"}}>{err}</div>}
           <button onClick={handleVerify} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
@@ -2391,6 +2393,13 @@ function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
           <button onClick={handlePay} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:8}}>
             🔗 Reopen Payment Link
           </button>
+          <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:9,padding:"10px 12px",marginBottom:8,textAlign:"left"}}>
+            <div style={{color:"#64748b",fontSize:11,marginBottom:4}}>📧 Payment ID not received?</div>
+            <div style={{color:"#334155",fontSize:10,lineHeight:1.5}}>
+              Check your spam folder · Wait 2-3 minutes · 
+              Or email <a href="mailto:vaanienterprises2411@gmail.com" style={{color:"#4f9cf9",textDecoration:"none"}}>vaanienterprises2411@gmail.com</a> with your payment screenshot and we'll activate manually within 1 hour.
+            </div>
+          </div>
           <button onClick={onCancel} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer"}}>Cancel</button>
         </>}
         {step==="done"&&<>
