@@ -2336,26 +2336,20 @@ function Ring({score, size=44}){
   );
 }
 
-// ─── Payment Redirect Simulation ───────────────────────────────────────────
+// ─── Payment Portal ───────────────────────────────────────────────────────
 function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
-  const [step, setStep]=useState("confirm");
+  const [step,setStep]=useState("confirm");
   const price = currency==="INR" ? `₹${plan.inr}` : `$${plan.usd}`;
-
-  // Razorpay payment links — one per plan
   const PAYMENT_LINKS = {
     starter:    "https://rzp.io/rzp/wHUdBhlo",
     pro:        "https://rzp.io/rzp/ucbDbagi",
     enterprise: "https://rzp.io/rzp/qf06LtZs",
   };
-
+  const planKey = Object.keys(PLANS).find(k=>PLANS[k].inr===plan.inr)||"starter";
   const handlePay=()=>{
-    const link = PAYMENT_LINKS[plan.key||Object.keys(PLANS).find(k=>PLANS[k].inr===plan.inr)];
-    if(link){
-      window.open(link, "_blank");
-      setStep("pending");
-    }
+    window.open(PAYMENT_LINKS[planKey],"_blank");
+    setStep("pending");
   };
-
   return(
     <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%",textAlign:"center"}}>
@@ -2365,7 +2359,7 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
           <div style={{color:plan.color,fontWeight:900,fontSize:32,marginBottom:4}}>{price}</div>
           <div style={{color:"#475569",fontSize:12,marginBottom:4}}>Valid for 30 days from payment date</div>
           <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",marginBottom:16,textAlign:"left"}}>
-            {["30-day access from payment date","Reminder email sent 3 days before expiry","Renew anytime to continue access","Cancel anytime — no auto-debit","All features unlock immediately after payment"].map(f=>(
+            {["30-day access from payment date","Reminder email 3 days before expiry","Renew anytime to continue access","No auto-debit ever","All features unlock immediately"].map(f=>(
               <div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,display:"flex",gap:6}}>
                 <span style={{color:plan.color,flexShrink:0}}>✓</span>{f}
               </div>
@@ -2383,8 +2377,8 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
           <div style={{fontSize:44,marginBottom:14}}>🔗</div>
           <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment</div>
           <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20}}>
-            Razorpay payment page has opened in a new tab.<br/>
-            Complete payment there, then come back here and click <strong style={{color:"#34d399"}}>I've Paid</strong> below.
+            Razorpay page opened in a new tab.<br/>
+            Complete payment there, then click <strong style={{color:"#34d399"}}>I've Paid</strong> below.
           </div>
           <button onClick={()=>setStep("done")} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
             ✅ I've Paid — Activate My Plan
@@ -2399,8 +2393,7 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
           <div style={{color:"#34d399",fontWeight:900,fontSize:18,marginBottom:8}}>Plan Activated!</div>
           <div style={{color:"#64748b",fontSize:13,lineHeight:1.7}}>
             Welcome to <span style={{color:plan.color,fontWeight:700}}>{plan.name}</span>!<br/>
-            Valid for 30 days.<br/>
-            You'll receive a reminder email 3 days before expiry.
+            Valid for 30 days. Reminder email 3 days before expiry.
           </div>
           <button onClick={()=>onSuccess({})} style={{marginTop:16,width:"100%",padding:"12px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
             Start Using {plan.name} →
@@ -2411,68 +2404,6 @@ function PaymentPortal({plan, currency, onSuccess, onCancel, user}){
   );
 }
 
-  useEffect(()=>{
-    if(step==="processing"){
-      const t=setTimeout(()=>setStep("done"),2500);
-      return()=>clearTimeout(t);
-    }
-    if(step==="done"){
-      const t=setTimeout(()=>onSuccess(),1000);
-      return()=>clearTimeout(t);
-    }
-  },[step]);
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%",textAlign:"center"}}>
-        {step==="confirm"&&<>
-          <div style={{fontSize:36,marginBottom:12}}>💳</div>
-          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:18,marginBottom:6}}>Complete Payment</div>
-          <div style={{color:"#64748b",fontSize:13,marginBottom:6}}>Subscribing to <strong style={{color:plan.color}}>{plan.name}</strong></div>
-          <div style={{color:plan.color,fontWeight:900,fontSize:28,marginBottom:20}}>{price}</div>
-          <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:12,padding:14,marginBottom:20,textAlign:"left"}}>
-            <div style={{color:"#475569",fontSize:11,marginBottom:8,fontWeight:700}}>PAYMENT METHOD</div>
-            {currency==="INR"
-              ?<div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {["UPI / Google Pay / PhonePe","Net Banking","Credit / Debit Card","Paytm Wallet"].map(m=>(
-                  <div key={m} style={{background:"#1e293b",borderRadius:8,padding:"9px 12px",color:"#94a3b8",fontSize:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>{m}</span><span style={{color:"#34d399",fontSize:10}}>via Razorpay</span>
-                  </div>
-                ))}
-              </div>
-              :<div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {["Credit / Debit Card","Apple Pay","Google Pay"].map(m=>(
-                  <div key={m} style={{background:"#1e293b",borderRadius:8,padding:"9px 12px",color:"#94a3b8",fontSize:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>{m}</span><span style={{color:"#34d399",fontSize:10}}>via Stripe</span>
-                  </div>
-                ))}
-              </div>
-            }
-          </div>
-          <div style={{display:"flex",gap:9}}>
-            <button onClick={onCancel} style={{flex:1,padding:"11px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Back</button>
-            <button onClick={()=>setStep("processing")} style={{flex:2,padding:"11px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>Pay {price} →</button>
-          </div>
-          <div style={{color:"#334155",fontSize:10,marginTop:12}}>🔒 Secure · 7-day free trial · Cancel anytime</div>
-        </>}
-        {step==="processing"&&<>
-          <div style={{fontSize:36,marginBottom:14}}>⏳</div>
-          <div style={{color:"#f1f5f9",fontWeight:700,fontSize:16,marginBottom:6}}>Processing payment...</div>
-          <div style={{color:"#475569",fontSize:12}}>Please wait, do not close this window</div>
-          <div style={{background:"#1e293b",borderRadius:99,height:4,marginTop:20,overflow:"hidden"}}>
-            <div style={{height:4,background:`linear-gradient(90deg,${plan.color},${plan.color}88)`,borderRadius:99,animation:"progressBar 2.5s ease-in-out forwards"}}/>
-          </div>
-          <style>{`@keyframes progressBar{from{width:0%}to{width:100%}}`}</style>
-        </>}
-        {step==="done"&&<>
-          <div style={{fontSize:44,marginBottom:10}}>🎉</div>
-          <div style={{color:"#34d399",fontWeight:900,fontSize:18,marginBottom:6}}>Payment Successful!</div>
-          <div style={{color:"#64748b",fontSize:13}}>Welcome to <span style={{color:plan.color,fontWeight:700}}>{plan.name}</span>. Loading your dashboard...</div>
-        </>}
-      </div>
-    </div>
-  );
-}
 // ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
   const [showForm,setShowForm]=useState(false);
