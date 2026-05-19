@@ -3310,14 +3310,19 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
 
   const handleSubmit=()=>{
     if(!canFormFill) return;
-    const base="https://docs.google.com/forms/d/e/1FAIpQLScgoC0zigEeu7onY8n-wZM0KjMQ_cNgM6VvlHxyF7ZA74w6lg/viewform";
-    const params=new URLSearchParams({
-      "entry.2005620554":form.name,"entry.1065046570":form.category,
-      "entry.1045781291":form.application,"entry.1166974658":form.requirements||"",
-      "entry.839337160":form.email,
-    });
-    window.open(base+"?usp=pp_url&"+params.toString(),"_blank");
-    if(isPaid){setPayStep("done");return;}
+    if(isPaid){
+      // Pro/Enterprise — open Google Form directly, free
+      const base="https://docs.google.com/forms/d/e/1FAIpQLScgoC0zigEeu7onY8n-wZM0KjMQ_cNgM6VvlHxyF7ZA74w6lg/viewform";
+      const params=new URLSearchParams({
+        "entry.2005620554":form.name,"entry.1065046570":form.category,
+        "entry.1045781291":form.application,"entry.1166974658":form.requirements||"",
+        "entry.839337160":form.email,
+      });
+      window.open(base+"?usp=pp_url&"+params.toString(),"_blank");
+      setPayStep("done");
+      return;
+    }
+    // Free/Starter — show payment step first
     setPayStep("payment");
   };
 
@@ -3347,38 +3352,22 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%"}}>
         {payStep==="payment"&&<>
           <div style={{fontSize:36,marginBottom:10}}>💳</div>
-          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Complete Payment</div>
-          <div style={{color:"#64748b",fontSize:13,marginBottom:6}}>Custom formulation request for:</div>
-          <div style={{color:"#f59e0b",fontWeight:700,fontSize:14,marginBottom:16}}>"{form.name}"</div>
-          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:30,marginBottom:4}}>{priceStr}</div>
-          <div style={{color:"#475569",fontSize:12,marginBottom:20}}>one-time · response within 24h</div>
-
-          {/* What you get */}
-          <div style={{background:"#f59e0b11",border:"1px solid #f59e0b33",borderRadius:12,padding:14,marginBottom:18,textAlign:"left"}}>
-            <div style={{color:"#f59e0b",fontWeight:700,fontSize:12,marginBottom:8}}>What you receive:</div>
-            {["Complete formulation with ingredient %","Raw material costs (INR/kg)","Brief manufacturing process overview","Key performance parameters","Added to ChemForm Pro library"].map(i=>(
-              <div key={i} style={{color:"#94a3b8",fontSize:11,marginBottom:4,display:"flex",gap:6}}><span style={{color:"#f59e0b"}}>✓</span>{i}</div>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Pay to Submit Request</div>
+          <div style={{color:"#64748b",fontSize:13,marginBottom:6}}>Custom formulation for:</div>
+          <div style={{color:"#f59e0b",fontWeight:700,fontSize:14,marginBottom:12}}>"{form.name}"</div>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:30,marginBottom:2}}>₹499</div>
+          <div style={{color:"#475569",fontSize:12,marginBottom:16}}>one-time · response within 24h</div>
+          <div style={{background:"#f59e0b11",border:"1px solid #f59e0b33",borderRadius:12,padding:12,marginBottom:16,textAlign:"left"}}>
+            {["Complete formulation with ingredient %","RM costs in INR/kg","Manufacturing process overview","Added to ChemForm Pro library"].map(i=>(
+              <div key={i} style={{color:"#94a3b8",fontSize:11,marginBottom:3,display:"flex",gap:6}}><span style={{color:"#f59e0b"}}>✓</span>{i}</div>
             ))}
           </div>
-
-          {/* Payment methods */}
-          <div style={{textAlign:"left",marginBottom:18}}>
-            <div style={{color:"#475569",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Pay via</div>
-            {(currency==="INR"
-              ?["UPI / Google Pay / PhonePe","Net Banking","Credit / Debit Card","Paytm"]
-              :["Credit / Debit Card","Apple Pay / Google Pay"]
-            ).map(m=>(
-              <div key={m} style={{background:"#1e293b",borderRadius:8,padding:"9px 12px",color:"#94a3b8",fontSize:12,marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}
-                onClick={()=>setPayStep("processing")}>
-                <span>{m}</span>
-                <span style={{color:"#475569",fontSize:10}}>{currency==="INR"?"via Razorpay":"via Stripe"} →</span>
-              </div>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:9}}>
-            <button onClick={()=>setPayStep("form")} style={{flex:1,padding:"10px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:12,cursor:"pointer"}}>← Back</button>
-          </div>
-          <div style={{color:"#334155",fontSize:10,marginTop:12}}>🔒 Secure · No card stored · One-time charge</div>
+          <button onClick={()=>{window.open("https://rzp.io/rzp/hZ9G7udc","_blank");setPayStep("verify");}}
+            style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",borderRadius:11,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
+            Pay ₹499 via Razorpay →
+          </button>
+          <button onClick={()=>setPayStep("form")} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer"}}>← Back</button>
+          <div style={{color:"#334155",fontSize:10,marginTop:10}}>🔒 UPI · Cards · Net Banking · Secure</div>
 
           {/* Upgrade nudge */}
           <div style={{borderTop:"1px solid #1e293b",marginTop:16,paddingTop:14}}>
@@ -3388,6 +3377,40 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
               ✨ Upgrade to Pro — ₹2,399/mo → Unlimited requests
             </button>
           </div>
+        </>}
+        {payStep==="verify"&&<>
+          <div style={{fontSize:44,marginBottom:14}}>🔗</div>
+          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Payment Complete?</div>
+          <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>
+            After paying on Razorpay, enter your Payment ID from the confirmation SMS/email, then we'll open the Google Form for your request details.
+          </div>
+          <div style={{textAlign:"left",marginBottom:10}}>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,letterSpacing:"0.08em",marginBottom:6,textTransform:"uppercase"}}>Razorpay Payment ID *</div>
+            <input
+              onChange={e=>window._reqTxnId=e.target.value}
+              placeholder="pay_xxxxxxxxxxxxxxxxx"
+              style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            <div style={{color:"#334155",fontSize:10,marginTop:4}}>From Razorpay confirmation SMS or email</div>
+          </div>
+          <button onClick={()=>{
+            const txn=(window._reqTxnId||"").trim();
+            if(!txn||txn.length<6){alert("Please enter your Razorpay Payment ID from the confirmation SMS/email");return;}
+            const base="https://docs.google.com/forms/d/e/1FAIpQLScgoC0zigEeu7onY8n-wZM0KjMQ_cNgM6VvlHxyF7ZA74w6lg/viewform";
+            const params=new URLSearchParams({
+              "entry.2005620554":form.name,"entry.1065046570":form.category,
+              "entry.1045781291":form.application,"entry.1166974658":form.requirements||"",
+              "entry.839337160":form.email,
+            });
+            window.open(base+"?usp=pp_url&"+params.toString(),"_blank");
+            setPayStep("done");
+          }} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
+            ✅ Verify & Open Google Form
+          </button>
+          <button onClick={()=>window.open("https://rzp.io/rzp/hZ9G7udc","_blank")}
+            style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:6}}>
+            🔗 Reopen Payment Link
+          </button>
+          <div style={{color:"#334155",fontSize:10}}>Payment ID not received? Email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a></div>
         </>}
         {payStep==="processing"&&<>
           <div style={{fontSize:36,marginBottom:14}}>⏳</div>
