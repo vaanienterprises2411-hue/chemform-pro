@@ -4316,8 +4316,7 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
           </div>
         ))}
       </div>
-      <button onClick={()=>onUpgrade("ChemEng Pro")}
-        <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
+      <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
         style={{background:`linear-gradient(135deg,${color},#f97316)`,border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"12px 28px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
         Upgrade to Pro — ₹2,399 →
       </button>
