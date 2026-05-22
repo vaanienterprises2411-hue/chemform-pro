@@ -4301,26 +4301,48 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
   const color = "#fb923c";
 
   if(!hasAccess) return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"50px 24px",textAlign:"center",flex:1}}>
-      <div style={{fontSize:44,marginBottom:12}}>⚗️</div>
-      <div style={{color,fontWeight:900,fontSize:18,marginBottom:8}}>ChemEng Pro</div>
-      <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360}}>
-        Industrial-scale manufacturing processes for polymer synthesis, specialty chemicals, APIs, agrochemicals, biofuels and more.<br/><br/>
-        Includes reactor design, process parameters, equipment specifications and engineering data.
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24,maxWidth:360,width:"100%"}}>
-        {["PVAc & Acrylic Emulsion Polymerisation","Epoxy & Alkyd Resin Synthesis","Polyester & Polyether Polyols","EVA & SBR Latex Manufacturing","HPMC & CMC Cellulose Ethers","Ethanol Fermentation & Biodiesel","Paracetamol API Synthesis","Sodium Silicate & Inorganic Chemicals"].map(f=>(
-          <div key={f} style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:9,padding:"10px 12px",display:"flex",gap:8,alignItems:"flex-start"}}>
-            <span style={{color,fontSize:12,flexShrink:0}}>⚗</span>
-            <span style={{color:"#475569",fontSize:11,lineHeight:1.4}}>{f}</span>
+    <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
+      {/* Left — locked formula list */}
+      <div style={{width:260,borderRight:"1px solid #1e293b",overflowY:"auto",padding:10,flexShrink:0,display:"flex",flexDirection:"column"}}>
+        <div style={{color:"#fb923c",fontWeight:800,fontSize:12,marginBottom:2}}>⚗️ ChemEng Pro</div>
+        <div style={{color:"#475569",fontSize:9,marginBottom:8}}>22 industrial manufacturing processes</div>
+        <div style={{background:"#fb923c11",border:"1px solid #fb923c33",borderRadius:7,padding:"7px 9px",marginBottom:8,fontSize:10,color:"#64748b",lineHeight:1.5}}>
+          🔒 <span style={{color:"#fb923c",fontWeight:700}}>Pro & Enterprise only</span> — Upgrade to access all industrial processes
+        </div>
+        {(FORMULAS.chemeng||[]).map(f=>(
+          <div key={f.id} onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
+            style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:10,padding:"9px 10px",cursor:"pointer",marginBottom:5,opacity:0.5,transition:"all 0.2s"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="#fb923c44";e.currentTarget.style.opacity="0.7";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="#1e293b";e.currentTarget.style.opacity="0.5";}}>
+            <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:2,display:"flex",alignItems:"center",gap:5}}>
+              <span style={{fontSize:9}}>🔒</span>{f.name}
+            </div>
+            <div style={{color:"#475569",fontSize:9,lineHeight:1.3}}>{f.sub}</div>
           </div>
         ))}
       </div>
-      <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
-        style={{background:`linear-gradient(135deg,${color},#f97316)`,border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"12px 28px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
-        Upgrade to Pro — ₹2,399 →
-      </button>
-      <div style={{color:"#334155",fontSize:11}}>Available on Pro and Enterprise plans</div>
+      {/* Right — upgrade prompt */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:14}}>⚗️</div>
+        <div style={{color:"#fb923c",fontWeight:900,fontSize:20,marginBottom:8}}>ChemEng Pro</div>
+        <div style={{color:"#64748b",fontSize:13,lineHeight:1.8,marginBottom:20,maxWidth:360}}>
+          22 industrial-scale manufacturing processes including polymer synthesis, epoxy & alkyd resin, cellulose ethers, biofuels, pharma APIs and more.<br/><br/>
+          <span style={{color:"#94a3b8"}}>Includes reactor parameters, process conditions, equipment specifications and engineering data.</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24,maxWidth:380,width:"100%"}}>
+          {["PVAc & Acrylic Emulsion","Epoxy & Alkyd Resin","Polyester & Polyether Polyols","EVA & SBR Latex","HPMC & CMC Cellulose Ethers","Ethanol & Biodiesel","Paracetamol API Synthesis","Sodium Silicate & more"].map(f=>(
+            <div key={f} style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:9,padding:"9px 12px",display:"flex",gap:8,alignItems:"flex-start"}}>
+              <span style={{color:"#fb923c",fontSize:11,flexShrink:0}}>⚗</span>
+              <span style={{color:"#475569",fontSize:10,lineHeight:1.4}}>{f}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
+          style={{background:"linear-gradient(135deg,#fb923c,#f97316)",border:"none",color:"#fff",fontWeight:800,fontSize:15,padding:"13px 32px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
+          ✨ Upgrade to Pro — ₹2,399 →
+        </button>
+        <div style={{color:"#334155",fontSize:11}}>Available on Pro and Enterprise plans · 30-day validity</div>
+      </div>
     </div>
   );
 
