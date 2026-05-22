@@ -4317,6 +4317,7 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
         ))}
       </div>
       <button onClick={()=>onUpgrade("ChemEng Pro")}
+        <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
         style={{background:`linear-gradient(135deg,${color},#f97316)`,border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"12px 28px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
         Upgrade to Pro — ₹2,399 →
       </button>
@@ -4340,8 +4341,9 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search process..."
           style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:11,outline:"none",marginBottom:8,boxSizing:"border-box"}}/>
         {isPro&&(
-          <div style={{background:"#fb923c11",border:"1px solid #fb923c33",borderRadius:7,padding:"6px 9px",marginBottom:8,fontSize:9,color:"#64748b",lineHeight:1.4}}>
-            <span style={{color:"#fb923c",fontWeight:700}}>Pro access:</span> View all formulas + ingredients. Full process & equipment details on Enterprise only.
+          <div style={{background:"#a78bfa11",border:"1px solid #a78bfa33",borderRadius:7,padding:"6px 9px",marginBottom:8,fontSize:9,color:"#64748b",lineHeight:1.4}}>
+            <span style={{color:"#a78bfa",fontWeight:700}}>Pro access:</span> Ingredients visible. Full process on Enterprise.{" "}
+            <span onClick={()=>onUpgrade("Full ChemEng Process Details")} style={{color:"#a78bfa",cursor:"pointer",fontWeight:700,textDecoration:"underline"}}>Upgrade →</span>
           </div>
         )}
         <div style={{flex:1,overflowY:"auto"}}>
@@ -4615,7 +4617,7 @@ export default function App(){
         </div>
       ):isChemEng?(
         <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}}>
-          <ChemEngPanel planKey={planKey} currency={currency}/>
+          <ChemEngPanel planKey={planKey} currency={currency} onUpgrade={handleUpgrade}/>
         </div>
       ):(
         <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
