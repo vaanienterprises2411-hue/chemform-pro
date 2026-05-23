@@ -4328,7 +4328,7 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
         ))}
       </div>
       {/* Right — upgrade prompt */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center",overflowY:"auto"}}>
         <div style={{fontSize:48,marginBottom:14}}>⚗️</div>
         <div style={{color:"#fb923c",fontWeight:900,fontSize:20,marginBottom:8}}>ChemEng Pro</div>
         <div style={{color:"#64748b",fontSize:13,lineHeight:1.8,marginBottom:20,maxWidth:360}}>
@@ -4514,6 +4514,7 @@ export default function App(){
   const [planKey,setPlanKey]=useState("free");
   const [isMobile,setIsMobile]=useState(window.innerWidth<768);
   const [mobileView,setMobileView]=useState("list");
+  const [appReady,setAppReady]=useState(false);
   const [currency,setCurrency]=useState("INR");
   const [catId,setCatId]=useState("drymix");
   const [selected,setSelected]=useState(null);
@@ -4532,7 +4533,26 @@ export default function App(){
 
   const handleLogin=useCallback((u)=>{
     setUser(u);
+    setPlanKey(u.plan||"free");
     if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
+    // Save login so device remembers
+    try{ window.localStorage.setItem("chemform_user", JSON.stringify(u)); }catch(e){}
+  },[]);
+
+  // Load saved user on startup
+  useEffect(()=>{
+    try{
+      const saved=window.localStorage.getItem("chemform_user");
+      if(saved){
+        const u=JSON.parse(saved);
+        if(u&&u.email&&u.name){
+          setUser(u);
+          setPlanKey(u.plan||"free");
+          if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
+        }
+      }
+    }catch(e){}
+    setAppReady(true);
   },[]);
 
   const allFormulas=FORMULAS[catId]||[];
@@ -4563,6 +4583,14 @@ export default function App(){
 
   const useQuota=(type)=>setUsage(u=>({...u,[type]:u[type]+1}));
 
+  if(!appReady) return(
+    <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:40,marginBottom:12}}>⚗</div>
+        <div style={{color:"#475569",fontSize:13}}>Loading ChemForm Pro...</div>
+      </div>
+    </div>
+  );
   if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
