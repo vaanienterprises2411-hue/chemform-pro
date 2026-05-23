@@ -4278,6 +4278,12 @@ function BannerAd({onUpgrade}){
     {b:"Flipkart Business",t:"Industrial supplies & packaging at wholesale rates"},
     {b:"Pidilite Industries",t:"Specialty chemicals & raw materials for formulators"},
   ];
+  useEffect(()=>{
+    const _resize=()=>setIsMobile(window.innerWidth<768);
+    window.addEventListener("resize",_resize);
+    return()=>window.removeEventListener("resize",_resize);
+  },[]);
+
   useEffect(()=>{ const t=setInterval(()=>setI(x=>(x+1)%ads.length),5000); return()=>clearInterval(t); },[]);
   return(
     <div style={{borderTop:"1px solid #1e293b",background:"#060b14",padding:"6px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexShrink:0}}>
@@ -4338,7 +4344,7 @@ function ChemEngPanel({planKey, currency, onUpgrade}){
           ))}
         </div>
         <button onClick={()=>onUpgrade("ChemEng Pro — Industrial Process Library")}
-          style={{background:"linear-gradient(135deg,#fb923c,#f97316)",border:"none",color:"#fff",fontWeight:800,fontSize:15,padding:"13px 32px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
+          style={{background:"linear-gradient(135deg,#fb923c,#f97316)",border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"13px 32px",borderRadius:11,cursor:"pointer",marginBottom:8,width:"100%",maxWidth:320}}>
           ✨ Upgrade to Pro — ₹2,399 →
         </button>
         <div style={{color:"#334155",fontSize:11}}>Available on Pro and Enterprise plans · 30-day validity</div>
@@ -4506,6 +4512,8 @@ Regards`);
 export default function App(){
   const [user,setUser]=useState(null);
   const [planKey,setPlanKey]=useState("free");
+  const [isMobile,setIsMobile]=useState(window.innerWidth<768);
+  const [mobileView,setMobileView]=useState("list");
   const [currency,setCurrency]=useState("INR");
   const [catId,setCatId]=useState("drymix");
   const [selected,setSelected]=useState(null);
@@ -4534,6 +4542,7 @@ export default function App(){
   const handleSelect=(f)=>{
     if(planKey==="free"&&!f.free){setPaywallMsg("Full Formula Library (Starter+)");return;}
     setSelected(f); setRightTab("formula");
+    if(isMobile) setMobileView("detail");
   };
 
   const handleUpgrade=(msg)=>{ setPaywallMsg(msg||null); setShowPricing(true); };
@@ -4589,35 +4598,43 @@ export default function App(){
       )}
 
       {/* Header */}
-      <div style={{borderBottom:"1px solid #1e293b",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#060b14",flexShrink:0,gap:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+      <div style={{borderBottom:"1px solid #1e293b",padding:"7px 12px",display:"flex",alignItems:"center",background:"#060b14",flexShrink:0,gap:6}}>
+        {/* Logo */}
+        <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
           <div style={{width:28,height:28,borderRadius:8,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>⚗</div>
-          <div>
+          <div style={{display:"none"}} className="desktop-only">
             <div style={{fontWeight:900,fontSize:13}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name} · {INDUSTRIES.find(i=>i.id===user.industry)?.label}</div>
+            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name}</div>
           </div>
         </div>
-        <div style={{display:"flex",gap:5,flex:1,justifyContent:"center",flexWrap:"wrap"}}>
-          <QBadge used={usage.ai} limit={plan.ai} label="AI" color="#4f9cf9"/>
-          {planKey!=="free"&&<QBadge used={usage.process} limit={plan.process} label="Process" color="#34d399"/>}
-          {planKey!=="free"&&<QBadge used={usage.equipment} limit={plan.equipment} label="Equip" color="#e8a838"/>}
+        {/* AI Badge */}
+        <QBadge used={usage.ai} limit={plan.ai} label="AI" color="#4f9cf9"/>
+        {/* Spacer */}
+        <div style={{flex:1}}/>
+        {/* Currency */}
+        <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden",flexShrink:0}}>
+          {["INR","USD"].map(cur=>(
+            <button key={cur} onClick={()=>setCurrency(cur)} style={{padding:"4px 8px",border:"none",background:currency===cur?"#1e293b":"transparent",color:currency===cur?"#f1f5f9":"#475569",fontSize:9,fontWeight:700,cursor:"pointer"}}>{cur==="INR"?"₹":"$"}</button>
+          ))}
         </div>
-        <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
-          <div style={{display:"flex",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:6,overflow:"hidden"}}>
-            {["INR","USD"].map(c=>(
-              <button key={c} onClick={()=>setCurrency(c)} style={{padding:"4px 9px",border:"none",background:currency===c?"#1e293b":"transparent",color:currency===c?"#f1f5f9":"#475569",fontSize:10,fontWeight:700,cursor:"pointer"}}>{c==="INR"?"₹ INR":"$ USD"}</button>
-            ))}
-          </div>
-          <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:10,fontWeight:800,padding:"5px 11px",borderRadius:6,cursor:"pointer"}}>
-            {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
-          </button>
-        </div>
+        {/* Upgrade */}
+        <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:9,fontWeight:800,padding:"5px 9px",borderRadius:6,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+          {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
+        </button>
+        {/* Logout */}
+        <button title="Logout" onClick={()=>{
+          try{window.localStorage&&window.localStorage.removeItem("chemform_user");}catch(e){}
+          try{window.localStorage&&window.localStorage.removeItem("chemform_usage");}catch(e){}
+          setUser(null);setSelected(null);setPlanKey("free");
+        }} style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",fontSize:11,fontWeight:600,padding:"5px 8px",borderRadius:6,cursor:"pointer",flexShrink:0}} title="Logout">
+          ⏏
+        </button>
       </div>
 
       {/* Category tabs */}
       <div style={{display:"flex",borderBottom:"1px solid #1e293b",background:"#060b14",flexShrink:0,overflowX:"auto"}}>
         {CATEGORIES.map(c=>(
-          <button key={c.id} onClick={()=>{setCatId(c.id);setSelected(null);setSearch("");}} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:catId===c.id?c.color:"#475569",borderBottom:`2px solid ${catId===c.id?c.color:"transparent"}`,fontWeight:catId===c.id?700:500,fontSize:10,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}>
+          <button key={c.id} onClick={()=>{setCatId(c.id);setSelected(null);setSearch("");setMobileView("list");}} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:catId===c.id?c.color:"#475569",borderBottom:`2px solid ${catId===c.id?c.color:"transparent"}`,fontWeight:catId===c.id?700:500,fontSize:10,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}>
             {c.icon} {c.label}
             {c.enterprise&&<span style={{background:"#fb923c22",color:"#fb923c",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>ENT</span>}
             {c.paid&&<span style={{background:"#e879f922",color:"#e879f9",fontSize:7,fontWeight:800,padding:"1px 4px",borderRadius:3}}>PRO</span>}
@@ -4642,7 +4659,7 @@ export default function App(){
         </div>
       ):(
         <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
-          <div style={{width:252,borderRight:"1px solid #1e293b",overflowY:"auto",padding:10,flexShrink:0,display:"flex",flexDirection:"column"}}>
+          <div style={{width:isMobile?(mobileView==="list"?"100%":"0px"):"252px",borderRight:isMobile?"none":"1px solid #1e293b",overflowY:"auto",padding:isMobile&&mobileView!=="list"?0:10,flexShrink:0,display:"flex",flexDirection:"column",transition:"width 0.3s ease",overflow:isMobile&&mobileView!=="list"?"hidden":"auto"}}>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`🔍  Search ${cat?.label||""}...`}
               style={{width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:11,outline:"none",marginBottom:8}}/>
             {planKey==="free"&&(
@@ -4674,9 +4691,10 @@ export default function App(){
             </div>
           </div>
 
-          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,minWidth:0}}>
+          <div style={{flex:1,display:isMobile&&mobileView==="list"?"none":"flex",flexDirection:"column",minHeight:0,minWidth:0}}>
             <div style={{borderBottom:"1px solid #1e293b",display:"flex",padding:"0 12px",background:"#060b14",flexShrink:0}}>
-              {[{id:"formula",l:"📋 Formula"},{id:"optimizer",l:"🤖 AI Optimize"},{id:"batch",l:"⚖️ Batch Calc"}].map(t=>(
+              {isMobile&&<button onClick={()=>{setMobileView("list");setSelected(null);}} style={{background:"none",border:"none",color:"#4f9cf9",fontSize:20,cursor:"pointer",padding:"0 8px 0 0",flexShrink:0}}>☰</button>}
+              {[{id:"formula",l:"📋 Formula"},{id:"optimizer",l:isMobile?"🤖 AI":"🤖 AI Optimize"},{id:"batch",l:"⚖️ Batch"}].map(t=>(
                 <button key={t.id} onClick={()=>setRightTab(t.id)} style={{padding:"8px 12px",border:"none",background:"none",cursor:"pointer",color:rightTab===t.id?"#4f9cf9":"#475569",borderBottom:`2px solid ${rightTab===t.id?"#4f9cf9":"transparent"}`,fontWeight:rightTab===t.id?700:500,fontSize:11,transition:"all 0.2s",marginBottom:-1,whiteSpace:"nowrap"}}>{t.l}</button>
               ))}
             </div>
