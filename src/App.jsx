@@ -23,10 +23,18 @@ const calcCostPerKg = (ingredients, customPrices = {}) => {
 
 // ─── Plans ─────────────────────────────────────────────────────────────────
 const PLANS = {
-  free:       { name:"Free",       price:0,   inr:0,    usd:0,  color:"#64748b", ai:3,   process:0,   equipment:0,   engBasic:false, engDetailed:false, chemeng:false },
-  starter:    { name:"Starter",    price:749, inr:749,  usd:9,  color:"#34d399", ai:10,  process:5,   equipment:5,   engBasic:false, engDetailed:false, chemeng:false },
-  pro:        { name:"Pro",        price:2399,inr:2399, usd:29, color:"#4f9cf9", ai:50,  process:5,   equipment:5,   engBasic:true,  engDetailed:false, chemeng:false },
-  enterprise: { name:"Enterprise", price:8249,inr:8249, usd:99, color:"#a78bfa", ai:999, process:999, equipment:999, engBasic:true,  engDetailed:true,  chemeng:true  },
+  free:   { name:"Free",   inr:0,    color:"#64748b", ai:1,   hasFormulas:false },
+  annual: { name:"Annual", inr:3999, color:"#4f9cf9", ai:30,  hasFormulas:true  },
+};
+
+// ─── Razorpay Payment Links ───────────────────────────────────────────────────
+const RZP = {
+  annual:    "https://rzp.io/rzp/OsfvTlgL",  // ₹3,999/year
+  formula49: "https://rzp.io/rzp/UGVHhQ7D",  // ₹49 single formula
+  ai99:      "https://rzp.io/rzp/ha2yZxJa",  // ₹99 single AI
+  ai799:     "https://rzp.io/rzp/To6yOYE",   // ₹799 10 AI credits
+  process999:"https://rzp.io/rzp/WtmY3Ca0",  // ₹999 process+equipment
+  custom999: "https://rzp.io/rzp/6afbjT1F",  // ₹999 custom formulation
 };
 
 const INDUSTRIES = [
@@ -2936,88 +2944,80 @@ function Ring({score, size=44}){
   );
 }
 
-// ─── Payment Portal ───────────────────────────────────────────────────────
-function PaymentPortal({plan, planKey, currency, onSuccess, onCancel}){
+// ─── Payment Portal (Annual Plan Activation) ─────────────────────────────────
+function PaymentPortal({onSuccess, onCancel}){
   const [step,setStep]=useState("confirm");
+  const [email,setEmail]=useState("");
   const [txnId,setTxnId]=useState("");
   const [err,setErr]=useState("");
-  const price = currency==="INR" ? `₹${plan.inr}` : `$${plan.usd}`;
-  const PAYMENT_LINKS = {
-    starter:    "https://rzp.io/rzp/qf06LtZs",
-    pro:        "https://rzp.io/rzp/ucbDbagi",
-    enterprise: "https://rzp.io/rzp/wHUdBhlo",
-  };
+
   const handlePay=()=>{
-    const link = PAYMENT_LINKS[planKey];
-    if(link){ window.open(link,"_blank"); setStep("pending"); }
+    window.open(RZP.annual,"_blank");
+    setStep("verify");
   };
-  const handleVerify=()=>{
-    if(!txnId.trim()||txnId.trim().length<6){
-      setErr("Enter your Razorpay Payment ID from the confirmation SMS/email");
-      return;
-    }
-    setErr(""); setStep("done");
+
+  const handleActivate=()=>{
+    if(!email.trim()||!email.includes("@")){setErr("Enter your email");return;}
+    if(!txnId.trim()||txnId.length<6){setErr("Enter your Razorpay Payment ID from confirmation SMS/email");return;}
+    setErr("");
+    setStep("done");
   };
+
   return(
     <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:400,width:"100%",textAlign:"center"}}>
         {step==="confirm"&&<>
-          <div style={{fontSize:36,marginBottom:10}}>💳</div>
-          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Activate {plan.name} Plan</div>
-          <div style={{color:plan.color,fontWeight:900,fontSize:32,marginBottom:4}}>{price}</div>
-          <div style={{color:"#475569",fontSize:12,marginBottom:12}}>Valid for 30 days · No auto-debit · Reminder email 3 days before expiry</div>
+          <div style={{fontSize:36,marginBottom:10}}>🔓</div>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:17,marginBottom:4}}>Annual Formula Access</div>
+          <div style={{color:"#4f9cf9",fontWeight:900,fontSize:32,marginBottom:4}}>₹3,999</div>
+          <div style={{color:"#475569",fontSize:12,marginBottom:16}}>365 days · All 250+ formulas · 30 AI/month · No auto-debit</div>
           <div style={{display:"flex",gap:9}}>
             <button onClick={onCancel} style={{flex:1,padding:"11px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Back</button>
-            <button onClick={handlePay} style={{flex:2,padding:"11px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
-              Pay {price} via Razorpay →
+            <button onClick={handlePay} style={{flex:2,padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+              Pay ₹3,999 via Razorpay →
             </button>
           </div>
           <div style={{color:"#334155",fontSize:10,marginTop:10}}>🔒 UPI · Cards · Net Banking · Wallets</div>
         </>}
-        {step==="pending"&&<>
-          <div style={{fontSize:44,marginBottom:14}}>🔗</div>
-          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Complete Payment on Razorpay</div>
-          <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>
-            After paying, enter your Razorpay Payment ID from the confirmation SMS/email to activate.<br/>
-            <span style={{color:"#334155"}}>It looks like: pay_xxxxxxxxxxxxxxxxx</span>
-          </div>
+        {step==="verify"&&<>
+          <div style={{fontSize:40,marginBottom:12}}>✅</div>
+          <div style={{color:"#f1f5f9",fontWeight:800,fontSize:16,marginBottom:8}}>Payment Done? Activate Now</div>
+          <div style={{color:"#64748b",fontSize:12,marginBottom:14,lineHeight:1.6}}>Enter your email and Razorpay Payment ID from the confirmation SMS/email to activate your plan.</div>
           <div style={{textAlign:"left",marginBottom:10}}>
-            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,letterSpacing:"0.08em",marginBottom:6,textTransform:"uppercase"}}>Payment ID *</div>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Your Email *</div>
+            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com"
+              style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
+            <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Razorpay Payment ID *</div>
             <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder="pay_xxxxxxxxxxxxxxxxx"
               style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            <div style={{color:"#334155",fontSize:10,marginTop:4}}>From Razorpay confirmation SMS or email</div>
           </div>
-          {err&&<div style={{color:"#f87171",fontSize:11,padding:"8px 12px",background:"#f8717111",borderRadius:8,marginBottom:8,textAlign:"left"}}>{err}</div>}
-          <button onClick={handleVerify} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
-            ✅ Verify & Activate Plan
+          {err&&<div style={{color:"#f87171",fontSize:11,padding:"8px",background:"#f8717111",borderRadius:8,marginBottom:8,textAlign:"left"}}>{err}</div>}
+          <button onClick={handleActivate} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
+            ✅ Activate My Annual Plan
           </button>
-          <button onClick={handlePay} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:8}}>
+          <button onClick={handlePay} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:6}}>
             🔗 Reopen Payment Link
           </button>
-          <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:9,padding:"10px 12px",marginBottom:8,textAlign:"left"}}>
-            <div style={{color:"#64748b",fontSize:11,marginBottom:4}}>📧 Payment ID not received?</div>
-            <div style={{color:"#334155",fontSize:10,lineHeight:1.5}}>
-              Check your spam folder · Wait 2-3 minutes · 
-              Or email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your payment screenshot and we'll activate manually within 1 hour.
-            </div>
-          </div>
-          <button onClick={onCancel} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer"}}>Cancel</button>
+          <div style={{color:"#334155",fontSize:10}}>Not received? Email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a></div>
         </>}
         {step==="done"&&<>
           <div style={{fontSize:44,marginBottom:10}}>🎉</div>
           <div style={{color:"#34d399",fontWeight:900,fontSize:18,marginBottom:8}}>Plan Activated!</div>
           <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:4}}>
-            Welcome to <span style={{color:plan.color,fontWeight:700}}>{plan.name}</span>!<br/>
-            Valid for 30 days. Reminder 3 days before expiry.
+            Welcome! All 250+ formulas are now unlocked for 365 days.<br/>
+            Payment ref: <span style={{color:"#475569"}}>{txnId}</span>
           </div>
-          <div style={{color:"#334155",fontSize:10,marginBottom:14}}>Ref: {txnId}</div>
-          <button onClick={()=>onSuccess({txnId})} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,${plan.color},${plan.color}aa)`,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
-            Start Using {plan.name} →
+          <button onClick={()=>onSuccess({email,txnId,plan:"annual",expires:Date.now()+(365*24*60*60*1000)})}
+            style={{marginTop:14,width:"100%",padding:"12px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+            Start Exploring →
           </button>
         </>}
       </div>
     </div>
   );
 }
+
 
 // ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
@@ -3263,52 +3263,85 @@ function LoginScreen({onLogin}){
 }
 
 
-// ─── Pricing Modal ────────────────────────────────────────────────────────
-function PricingModal({onClose, currency, onSelectPlan}){
-  const featureMap = {
-    free:       ["3 free formulas per category","3 AI optimizations/month","RM price editor (all plans)","Batch calculator","Ads shown"],
-    starter:    ["All formulas unlocked","10 AI optimizations/month","5 process views/month","5 equipment views/month","RM price editor","No ads"],
-    pro:        ["All formulas unlocked","50 AI optimizations/month","5 process views/month","5 equipment views/month","Basic engineering design","RM price editor","No ads","Priority support"],
-    enterprise: ["All formulas + ChemEng Pro","Unlimited AI","Unlimited process & equipment","Basic + Detailed engineering","Quote requests for plant design","RM price editor","No ads"],
-  };
+// ─── Pricing Modal ───────────────────────────────────────────────────────────
+function PricingModal({onClose, currency, onSelectPlan, currentPlan}){
+  const openPay=(link)=>{ window.open(link,"_blank"); };
   return(
-    <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,overflowY:"auto"}}>
-      <div style={{maxWidth:840,width:"100%",background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
-          <div>
-            <div style={{color:"#f1f5f9",fontWeight:900,fontSize:19}}>Plans & Pricing</div>
-            <div style={{color:"#475569",fontSize:11,marginTop:3}}>Single-user · 7-day free trial on paid · No card for free plan · Cancel anytime</div>
-          </div>
-          <button onClick={onClose} style={{background:"#1e293b",border:"none",color:"#94a3b8",width:30,height:30,borderRadius:7,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+    <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24,maxWidth:520,width:"100%",maxHeight:"90vh",overflowY:"auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div style={{color:"#f1f5f9",fontWeight:900,fontSize:18}}>Unlock ChemForm Pro</div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"#475569",fontSize:20,cursor:"pointer"}}>✕</button>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:10,marginBottom:16}}>
-          {Object.entries(PLANS).map(([key,plan])=>(
-            <div key={key} style={{background:plan.color+"11",border:`1px solid ${plan.color}33`,borderRadius:14,padding:14,display:"flex",flexDirection:"column"}}>
-              <div style={{color:plan.color,fontWeight:900,fontSize:14,marginBottom:4}}>{plan.name}</div>
-              <div style={{display:"flex",alignItems:"baseline",gap:2,marginBottom:12}}>
-                {plan.price===0
-                  ?<span style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>Free</span>
-                  :<><span style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>{currency==="INR"?`₹${plan.inr}`:`$${plan.usd}`}</span><span style={{color:"#475569",fontSize:10}}>/mo</span></>
-                }
-              </div>
-              <div style={{flex:1,marginBottom:12}}>
-                {featureMap[key].map(f=>(
-                  <div key={f} style={{color:"#94a3b8",fontSize:10,marginBottom:4,display:"flex",gap:4,lineHeight:1.4}}>
-                    <span style={{color:plan.color,flexShrink:0}}>✓</span>{f}
-                  </div>
-                ))}
-              </div>
-              <button onClick={()=>onSelectPlan(key,plan)} style={{padding:"8px",borderRadius:9,border:"none",background:key==="free"?"#1e293b":`linear-gradient(135deg,${plan.color},${plan.color}cc)`,color:key==="free"?"#94a3b8":"#fff",fontWeight:700,fontSize:11,cursor:"pointer"}}>
-                {key==="free"?"Use Free":"Start Free Trial →"}
-              </button>
+
+        {/* Annual Plan */}
+        <div style={{background:"#0d1628",border:"2px solid #4f9cf944",borderRadius:14,padding:18,marginBottom:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+            <div>
+              <div style={{color:"#4f9cf9",fontWeight:900,fontSize:16,marginBottom:2}}>Annual Formula Access</div>
+              <div style={{color:"#475569",fontSize:12}}>Best value — everything for a year</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{color:"#f1f5f9",fontWeight:900,fontSize:26}}>₹3,999</div>
+              <div style={{color:"#475569",fontSize:10}}>/year</div>
+            </div>
+          </div>
+          {["All 250+ formulas unlocked","Batch calculator for all formulas","30 AI optimizations per month","No interstitial ads"].map(f=>(
+            <div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,display:"flex",gap:6}}>
+              <span style={{color:"#4f9cf9"}}>✓</span>{f}
+            </div>
+          ))}
+          <button onClick={()=>{openPay(RZP.annual);onClose();}}
+            style={{width:"100%",marginTop:12,padding:"12px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+            Pay ₹3,999 via Razorpay →
+          </button>
+          <div style={{color:"#334155",fontSize:10,textAlign:"center",marginTop:6}}>365 days · No auto-debit · Reminder 3 days before expiry</div>
+        </div>
+
+        {/* Divider */}
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+          <div style={{flex:1,height:1,background:"#1e293b"}}/>
+          <div style={{color:"#334155",fontSize:11}}>or pay only for what you need</div>
+          <div style={{flex:1,height:1,background:"#1e293b"}}/>
+        </div>
+
+        {/* Micro payments */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+          {[
+            {label:"Single Formula",price:"₹49",desc:"Full ingredients + costs",link:RZP.formula49,icon:"📋"},
+            {label:"AI Optimization",price:"₹99",desc:"1 AI credit",link:RZP.ai99,icon:"🤖"},
+            {label:"AI Pack × 10",price:"₹799",desc:"10 AI credits (save ₹191)",link:RZP.ai799,icon:"⚡"},
+            {label:"Process + Equipment",price:"₹999",desc:"1 formula full process",link:RZP.process999,icon:"⚙️"},
+            {label:"Custom Formulation",price:"₹999",desc:"Expert delivers in 24h",link:RZP.custom999,icon:"📩"},
+            {label:"Engineering Design",price:"Get Quote",desc:"Plant design, P&ID, scale-up",link:null,icon:"🏭"},
+          ].map(item=>(
+            <div key={item.label} style={{background:"#060b14",border:"1px solid #1e293b",borderRadius:10,padding:"12px 10px"}}>
+              <div style={{fontSize:18,marginBottom:6}}>{item.icon}</div>
+              <div style={{color:"#f1f5f9",fontSize:11,fontWeight:700,marginBottom:2}}>{item.label}</div>
+              <div style={{color:"#475569",fontSize:10,marginBottom:8}}>{item.desc}</div>
+              {item.link?(
+                <button onClick={()=>openPay(item.link)}
+                  style={{width:"100%",padding:"7px",background:"#1e293b",border:"1px solid #334155",borderRadius:7,color:"#f1f5f9",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                  {item.price} →
+                </button>
+              ):(
+                <button onClick={()=>window.open("mailto:info@chemformpro.in?subject=Engineering Design Quote","_blank")}
+                  style={{width:"100%",padding:"7px",background:"#fb923c22",border:"1px solid #fb923c44",borderRadius:7,color:"#fb923c",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                  Request Quote →
+                </button>
+              )}
             </div>
           ))}
         </div>
-        <div style={{textAlign:"center",color:"#334155",fontSize:11}}>🔒 Stripe (USD) · Razorpay (INR/UPI/Paytm) · No card required for free plan</div>
+
+        <div style={{color:"#334155",fontSize:10,textAlign:"center"}}>
+          After payment email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your payment ID to activate formula/process unlocks
+        </div>
       </div>
     </div>
   );
 }
+
 
 // ─── Quota Badge ──────────────────────────────────────────────────────────
 function QBadge({used, limit, label, color="#34d399"}){
@@ -3351,7 +3384,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
   },0);
 
   const handleTab=(id)=>{
-    const canProcess=planKey==="starter"||planKey==="pro"||planKey==="enterprise";
+    const canProcess=false; // Per-formula unlock via ₹999
     const canEquip=canProcess;
     const canEngBasic=plan.engBasic;
     const canEngDetailed=plan.engDetailed;
@@ -3469,10 +3502,12 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             );
           })}
+
           {(()=>{
             const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
+              <>
               <div style={{marginTop:12,display:"flex",gap:7}}>
                 <div style={{flex:1,padding:"10px 14px",background:color+"11",border:`1px solid ${color}33`,borderRadius:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:"#64748b",fontSize:12}}>Total RM Cost/kg:</span>
@@ -3483,6 +3518,12 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
                   <div style={{color:"#475569",fontSize:9}}>Total %</div>
                 </div>
               </div>
+              {/* Ad banner inside formula tab */}
+              <div style={{marginTop:14,background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{fontSize:9,color:"#334155",fontWeight:700,letterSpacing:"0.08em",marginBottom:2}}>SPONSORED</div>
+                <BannerAd onUpgrade={()=>window.open("mailto:info@chemformpro.in?subject=Sponsorship Enquiry","_blank")} inline={true}/>
+              </div>
+              </>
             );
           })()}
 
@@ -3689,12 +3730,13 @@ Respond ONLY with valid JSON (no markdown, no text outside):
             <span style={{color:"#64748b",fontSize:12}}>Monthly AI credits used up</span>
             <button onClick={()=>onUpgrade("More AI Optimizations")} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:6,cursor:"pointer"}}>Upgrade</button>
           </div>
-          <button onClick={()=>{
-            // Show rewarded ad to unlock 1 free AI credit
-            alert("📺 Rewarded Ad\n\nWatch a short ad to unlock 1 free AI optimization credit.\n\n[Ad would play here via Google AdMob]\n\nCredit unlocked! ✅");
-            onUseQuota("ai"); // unlock by decrementing (negative increment)
-          }} style={{width:"100%",padding:"9px",borderRadius:9,border:"1px solid #e8a83844",background:"#e8a83811",color:"#e8a838",fontWeight:700,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            📺 Watch Ad → Get 1 Free AI Credit
+          <button onClick={()=>window.open(RZP.ai99,"_blank")}
+            style={{width:"100%",padding:"9px",borderRadius:9,border:"1px solid #4f9cf944",background:"#4f9cf911",color:"#4f9cf9",fontWeight:700,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            🤖 Buy 1 AI Credit — ₹99 →
+          </button>
+          <button onClick={()=>window.open(RZP.ai799,"_blank")}
+            style={{width:"100%",padding:"9px",borderRadius:9,border:"1px solid #34d39944",background:"#34d39911",color:"#34d399",fontWeight:700,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:6}}>
+            ⚡ Buy 10 AI Credits — ₹799 →
           </button>
         </div>
       )}
@@ -4268,7 +4310,7 @@ function PharmaPanel({planKey, currency, onUpgrade}){
 }
 
 // ─── Banner Ad ────────────────────────────────────────────────────────────
-function BannerAd({onUpgrade}){
+function BannerAd({onUpgrade, inline=false}){
   const [i,setI]=useState(0);
   const ads=[
     {b:"BASF India",t:"Acronal® & Lutensol® — premium raw materials for coatings"},
@@ -4285,12 +4327,23 @@ function BannerAd({onUpgrade}){
   },[]);
 
   useEffect(()=>{ const t=setInterval(()=>setI(x=>(x+1)%ads.length),5000); return()=>clearInterval(t); },[]);
+  const ad = ads[i];
+  if(inline) return(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,width:"100%"}}>
+      <div style={{display:"flex",alignItems:"center",gap:6,minWidth:0,flex:1}}>
+        <span style={{background:"#1e293b",color:"#475569",fontSize:8,fontWeight:700,padding:"2px 4px",borderRadius:3,flexShrink:0}}>AD</span>
+        <span style={{color:"#64748b",fontSize:10,fontWeight:700,flexShrink:0}}>{ad.b}</span>
+        <span style={{color:"#334155",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ad.t}</span>
+      </div>
+      <button onClick={onUpgrade} style={{background:"none",border:"none",color:"#334155",fontSize:9,cursor:"pointer",flexShrink:0}}>✕</button>
+    </div>
+  );
   return(
     <div style={{borderTop:"1px solid #1e293b",background:"#060b14",padding:"6px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
         <span style={{background:"#1e293b",color:"#475569",fontSize:8,fontWeight:700,padding:"2px 4px",borderRadius:3,letterSpacing:"0.08em",flexShrink:0}}>AD</span>
-        <span style={{color:"#64748b",fontSize:10,fontWeight:700,flexShrink:0}}>{ads[i].b}</span>
-        <span style={{color:"#334155",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ads[i].t}</span>
+        <span style={{color:"#64748b",fontSize:10,fontWeight:700,flexShrink:0}}>{ad.b}</span>
+        <span style={{color:"#334155",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ad.t}</span>
       </div>
       <button onClick={onUpgrade} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontSize:10,padding:"4px 9px",borderRadius:5,cursor:"pointer",fontWeight:700,whiteSpace:"nowrap",flexShrink:0}}>Remove Ads ✨</button>
     </div>
@@ -4560,7 +4613,8 @@ export default function App(){
   const catColor=cat?.color||"#4f9cf9";
 
   const handleSelect=(f)=>{
-    if(planKey==="free"&&!f.free){setPaywallMsg("Full Formula Library (Starter+)");return;}
+    // Annual users can access all formulas
+    // Free users can access free formulas (first 3 per category)
     setSelected(f); setRightTab("formula");
     if(isMobile) setMobileView("detail");
   };
@@ -4569,14 +4623,21 @@ export default function App(){
 
   const handleSelectPlan=(key,planObj)=>{
     if(key==="free"){ setPlanKey("free"); setShowPricing(false); setPaywallMsg(null); return; }
-    // Show payment portal for paid plans
     setShowPricing(false);
-    setPaymentPortal({plan:planObj, key});
+    setPaymentPortal({plan:planObj||PLANS.annual, key:"annual"});
   };
 
-  const handlePaymentSuccess=()=>{
-    setPlanKey(paymentPortal.key);
-    setUsage({ai:0,process:0,equipment:0});
+  const handlePaymentSuccess=(data)=>{
+    setPlanKey("annual");
+    // Save plan to localStorage
+    try{
+      const u=JSON.parse(window.localStorage.getItem("chemform_user")||"{}");
+      u.plan="annual";
+      u.planExpires=data.expires||Date.now()+(365*24*60*60*1000);
+      u.planEmail=data.email||u.email;
+      window.localStorage.setItem("chemform_user",JSON.stringify(u));
+    }catch(e){}
+    setUsage(prev=>({...prev,ai:0}));
     setPaymentPortal(null);
     setPaywallMsg(null);
   };
@@ -4607,7 +4668,7 @@ export default function App(){
       `}</style>
 
       {/* Payment Portal */}
-      {paymentPortal&&<PaymentPortal plan={paymentPortal.plan} currency={currency} onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
+      {paymentPortal&&<PaymentPortal onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
 
       {/* Pricing Modal */}
       {showPricing&&!paymentPortal&&<PricingModal onClose={()=>{setShowPricing(false);setPaywallMsg(null);}} currency={currency} onSelectPlan={handleSelectPlan}/>}
@@ -4647,7 +4708,7 @@ export default function App(){
         </div>
         {/* Upgrade */}
         <button onClick={()=>setShowPricing(true)} style={{background:planKey==="free"?"linear-gradient(135deg,#4f9cf9,#a78bfa)":"transparent",border:`1px solid ${plan.color}`,color:planKey==="free"?"#fff":plan.color,fontSize:9,fontWeight:800,padding:"5px 9px",borderRadius:6,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
-          {planKey==="free"?"✨ Upgrade":`● ${plan.name}`}
+          {planKey==="free"?"✨ Unlock All":"✅ Annual"}
         </button>
         {/* Logout */}
         <button title="Logout" onClick={()=>{
@@ -4737,7 +4798,22 @@ export default function App(){
               )}
               {selected&&rightTab==="formula"&&<FormulaDetail formula={selected} currency={currency} planKey={planKey} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
               {selected&&rightTab==="optimizer"&&<AIOptimizer formula={selected} planKey={planKey} currency={currency} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
-              {selected&&rightTab==="batch"&&<BatchCalc formula={selected} currency={currency}/>}
+              {selected&&rightTab==="batch"&&(
+                planKey==="free"?(
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 24px",textAlign:"center"}}>
+                    <div style={{fontSize:40,marginBottom:12}}>⚖️</div>
+                    <div style={{color:"#f1f5f9",fontWeight:700,fontSize:16,marginBottom:8}}>Batch Calculator</div>
+                    <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:300}}>
+                      Calculate exact quantities and total RM cost for any batch size. Available on Annual plan.
+                    </div>
+                    <button onClick={()=>window.open(RZP.annual,"_blank")}
+                      style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"12px 28px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
+                      Unlock Annual Access — ₹3,999 →
+                    </button>
+                    <div style={{color:"#334155",fontSize:11}}>365 days · All formulas + batch calc + 30 AI/month</div>
+                  </div>
+                ):<BatchCalc formula={selected} currency={currency}/>
+              )}
             </div>
           </div>
         </div>
