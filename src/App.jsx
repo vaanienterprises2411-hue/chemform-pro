@@ -3482,7 +3482,26 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
 
       {tab==="formula"&&(
         <div>
-          {formula.ingredients.map((ing,i)=>{
+          {/* Paywall overlay for locked formulas */}
+          {planKey==="free"&&!formula.free&&(
+            <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:24,marginBottom:14,textAlign:"center"}}>
+              <div style={{fontSize:36,marginBottom:10}}>🔒</div>
+              <div style={{color:"#f1f5f9",fontWeight:800,fontSize:15,marginBottom:6}}>Full Formula Locked</div>
+              <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:16}}>
+                Unlock full ingredients, percentages, RM costs and batch calculator for this formula.
+              </div>
+              <button onClick={()=>window.open(RZP.formula49,"_blank")}
+                style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
+                Unlock this formula — ₹49 →
+              </button>
+              <button onClick={()=>window.open(RZP.annual,"_blank")}
+                style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
+                All 250+ formulas — ₹3,999/yr →
+              </button>
+              <div style={{color:"#334155",fontSize:10}}>After payment email info@chemformpro.in with payment ID to activate</div>
+            </div>
+          )}
+          {(planKey==="annual"||formula.free)&&formula.ingredients.map((ing,i)=>{
             const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
             const price=Number(rmPrices[ing.n]??ing.c);
             const contrib=(Number(ing.p)/100)*price;
@@ -3503,7 +3522,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
             );
           })}
 
-          {(()=>{
+          {(planKey==="annual"||formula.free)&&(()=>{
             const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
@@ -3954,7 +3973,7 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
       const params=new URLSearchParams({
         "entry.2005620554":form.name,"entry.1065046570":form.category,
         "entry.1045781291":form.application,"entry.1166974658":form.requirements||"",
-        "entry.839337160":form.email,
+        "entry.839337160":form.email||(user?.email||""),
       });
       window.open(base+"?usp=pp_url&"+params.toString(),"_blank");
       setPayStep("done");
@@ -4628,6 +4647,12 @@ export default function App(){
         }
       }
     }catch(e){}
+    // If no saved user, create guest session automatically
+    if(!window.localStorage.getItem("chemform_user")){
+      const guest = {name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};
+      setUser(guest);
+      setCatId("paints");
+    }
     setAppReady(true);
   },[]);
 
@@ -4636,8 +4661,6 @@ export default function App(){
   const catColor=cat?.color||"#4f9cf9";
 
   const handleSelect=(f)=>{
-    // Annual users can access all formulas
-    // Free users can access free formulas (first 3 per category)
     setSelected(f); setRightTab("formula");
     if(isMobile) setMobileView("detail");
   };
@@ -4671,11 +4694,10 @@ export default function App(){
     <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{textAlign:"center"}}>
         <div style={{fontSize:40,marginBottom:12}}>⚗</div>
-        <div style={{color:"#475569",fontSize:13}}>Loading ChemForm Pro...</div>
+        <div style={{color:"#475569",fontSize:13}}>Loading...</div>
       </div>
     </div>
   );
-  if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
     <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#060b14",height:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -4714,9 +4736,8 @@ export default function App(){
         {/* Logo */}
         <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
           <div style={{width:28,height:28,borderRadius:8,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>⚗</div>
-          <div style={{display:"none"}} className="desktop-only">
-            <div style={{fontWeight:900,fontSize:13}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-            <div style={{fontSize:8,color:"#475569",textTransform:"uppercase",letterSpacing:"0.04em"}}>{user.name}</div>
+          <div style={{fontWeight:900,fontSize:13,display:"flex",alignItems:"center",gap:4}}>
+            ChemForm <span style={{color:"#4f9cf9"}}>Pro</span>
           </div>
         </div>
         {/* AI Badge */}
@@ -4734,13 +4755,16 @@ export default function App(){
           {planKey==="free"?"✨ Unlock All":"✅ Annual"}
         </button>
         {/* Logout */}
-        <button title="Logout" onClick={()=>{
-          try{window.localStorage&&window.localStorage.removeItem("chemform_user");}catch(e){}
-          try{window.localStorage&&window.localStorage.removeItem("chemform_usage");}catch(e){}
-          setUser(null);setSelected(null);setPlanKey("free");
-        }} style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",fontSize:11,fontWeight:600,padding:"5px 8px",borderRadius:6,cursor:"pointer",flexShrink:0}} title="Logout">
-          ⏏
-        </button>
+        {user&&!user.isGuest&&(
+          <button title="Logout" onClick={()=>{
+            try{window.localStorage&&window.localStorage.removeItem("chemform_user");}catch(e){}
+            try{window.localStorage&&window.localStorage.removeItem("chemform_usage");}catch(e){}
+            const guest={name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};
+            setUser(guest);setSelected(null);setPlanKey("free");
+          }} style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",fontSize:11,fontWeight:600,padding:"5px 8px",borderRadius:6,cursor:"pointer",flexShrink:0}}>
+            ⏏
+          </button>
+        )}
       </div>
 
       {/* Category tabs */}
@@ -4846,7 +4870,7 @@ export default function App(){
         </div>
       )}
 
-      {planKey==="free"&&<BannerAd onUpgrade={()=>handleUpgrade()}/>}
+      <BannerAd onUpgrade={()=>handleUpgrade()}/>
     </div>
   );
 }
