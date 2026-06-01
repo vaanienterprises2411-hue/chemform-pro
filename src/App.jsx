@@ -3520,9 +3520,8 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
               {/* Ad banner inside formula tab */}
               <div style={{marginTop:14,background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:9,color:"#334155",fontWeight:700,letterSpacing:"0.08em",marginBottom:2}}>SPONSORED</div>
-                <BannerAd onUpgrade={()=>window.open("mailto:info@chemformpro.in?subject=Sponsorship Enquiry","_blank")} inline={true}/>
-              </div>
+                         {/* Inline Ad — shows for all users */}
+              <InlineAd/>
               </>
             );
           })()}
@@ -4309,6 +4308,33 @@ function PharmaPanel({planKey, currency, onUpgrade}){
   );
 }
 
+// ─── Inline Ad (inside formula tab) ─────────────────────────────────────────
+function InlineAd(){
+  const [i,setI]=useState(0);
+  const ads=[
+    {b:"BASF India",t:"Acronal® dispersions — premium binder for paints & coatings"},
+    {b:"Amazon Business",t:"Lab equipment & chemicals — bulk pricing, GST invoice"},
+    {b:"Pidilite Industries",t:"Specialty chemicals & raw materials for formulators"},
+    {b:"Merck India",t:"High purity chemicals for R&D, pilot and scale-up"},
+    {b:"Flipkart Business",t:"Industrial supplies & packaging at wholesale rates"},
+    {b:"Dow Chemical India",t:"WALOCEL™ cellulosics for drymix & construction"},
+  ];
+  useEffect(()=>{const t=setInterval(()=>setI(x=>(x+1)%ads.length),5000);return()=>clearInterval(t);},[]);
+  return(
+    <div style={{marginTop:14,background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,flex:1}}>
+        <span style={{background:"#1e293b",color:"#475569",fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:3,letterSpacing:"0.08em",flexShrink:0}}>AD</span>
+        <span style={{color:"#64748b",fontSize:11,fontWeight:700,flexShrink:0}}>{ads[i].b}</span>
+        <span style={{color:"#334155",fontSize:11,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ads[i].t}</span>
+      </div>
+      <button onClick={()=>window.open("mailto:info@chemformpro.in?subject=Advertise on ChemForm Pro","_blank")}
+        style={{background:"none",border:"1px solid #1e293b",color:"#334155",fontSize:9,padding:"3px 7px",borderRadius:5,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+        Advertise
+      </button>
+    </div>
+  );
+}
+
 // ─── Banner Ad ────────────────────────────────────────────────────────────
 function BannerAd({onUpgrade, inline=false}){
   const [i,setI]=useState(0);
@@ -4804,13 +4830,17 @@ export default function App(){
                     <div style={{fontSize:40,marginBottom:12}}>⚖️</div>
                     <div style={{color:"#f1f5f9",fontWeight:700,fontSize:16,marginBottom:8}}>Batch Calculator</div>
                     <div style={{color:"#64748b",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:300}}>
-                      Calculate exact quantities and total RM cost for any batch size. Available on Annual plan.
+                      Calculate exact quantities and total RM cost for any batch size — kg, MT or lbs.
                     </div>
-                    <button onClick={()=>window.open(RZP.annual,"_blank")}
-                      style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:14,padding:"12px 28px",borderRadius:11,cursor:"pointer",marginBottom:8}}>
-                      Unlock Annual Access — ₹3,999 →
+                    <button onClick={()=>window.open(RZP.formula49,"_blank")}
+                      style={{background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",color:"#fff",fontWeight:800,fontSize:13,padding:"11px 24px",borderRadius:10,cursor:"pointer",marginBottom:10,width:"100%",maxWidth:300}}>
+                      Unlock this formula — ₹49 →
                     </button>
-                    <div style={{color:"#334155",fontSize:11}}>365 days · All formulas + batch calc + 30 AI/month</div>
+                    <button onClick={()=>window.open(RZP.annual,"_blank")}
+                      style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:13,padding:"11px 24px",borderRadius:10,cursor:"pointer",marginBottom:8,width:"100%",maxWidth:300}}>
+                      All formulas + batch calc — ₹3,999/yr →
+                    </button>
+                    <div style={{color:"#334155",fontSize:11}}>365 days · 250+ formulas · 30 AI/month</div>
                   </div>
                 ):<BatchCalc formula={selected} currency={currency}/>
               )}
