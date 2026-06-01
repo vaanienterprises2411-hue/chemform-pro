@@ -3508,20 +3508,17 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
               <>
-              <div style={{marginTop:12,display:"flex",gap:7}}>
-                <div style={{flex:1,padding:"10px 14px",background:color+"11",border:`1px solid ${color}33`,borderRadius:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{color:"#64748b",fontSize:12}}>Total RM Cost/kg:</span>
-                  <span style={{color:color,fontWeight:900,fontSize:18}}>{fmtCur(customCostINR,currency)}</span>
+                <div style={{marginTop:12,display:"flex",gap:7}}>
+                  <div style={{flex:1,padding:"10px 14px",background:color+"11",border:`1px solid ${color}33`,borderRadius:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{color:"#64748b",fontSize:12}}>Total RM Cost/kg:</span>
+                    <span style={{color:color,fontWeight:900,fontSize:18}}>{fmtCur(customCostINR,currency)}</span>
+                  </div>
+                  <div style={{padding:"10px 14px",background:pctColor+"11",border:`1px solid ${pctColor}33`,borderRadius:9,textAlign:"center",minWidth:90}}>
+                    <div style={{color:pctColor,fontWeight:900,fontSize:18}}>{totalPct.toFixed(1)}%</div>
+                    <div style={{color:"#475569",fontSize:9}}>Total %</div>
+                  </div>
                 </div>
-                <div style={{padding:"10px 14px",background:pctColor+"11",border:`1px solid ${pctColor}33`,borderRadius:9,textAlign:"center",minWidth:90}}>
-                  <div style={{color:pctColor,fontWeight:900,fontSize:18}}>{totalPct.toFixed(1)}%</div>
-                  <div style={{color:"#475569",fontSize:9}}>Total %</div>
-                </div>
-              </div>
-              {/* Ad banner inside formula tab */}
-              <div style={{marginTop:14,background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                         {/* Inline Ad — shows for all users */}
-              <InlineAd/>
+                <InlineAd/>
               </>
             );
           })()}
@@ -3566,7 +3563,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
         </div>
       )}
 
-      {tab==="process"&&(planKey==="starter"||planKey==="pro"||planKey==="enterprise")&&(
+      {tab==="process"&&false&&(
         <div>
           <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:9}}>Manufacturing Process</div>
           {typeof formula.process === "string" ? (
