@@ -3035,8 +3035,8 @@ function LoginScreen({onLogin}){
     if(!email.trim()||!email.includes("@")){setErr("Please enter a valid email");return;}
     if(!industry){setErr("Please select your industry");return;}
     setLoading(true);
-    try {
-      await fetch("https://zpuzqnitczhgllgohrba.supabase.co/rest/v1/profiles", {
+    try{
+      await fetch("https://zpuzqnitczhgllgohrba.supabase.co/rest/v1/profiles",{
         method:"POST",
         headers:{
           "apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdXpxbml0Y3poZ2xsZ29ocmJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjIzNjIsImV4cCI6MjA5NDIzODM2Mn0.rM7RVpDW4o4j3GnyMVMBO_qkBPlo2zMTe5yG2v5SAH4",
@@ -3046,171 +3046,21 @@ function LoginScreen({onLogin}){
         },
         body:JSON.stringify({email:email.trim(),name:name.trim(),city,country,industry,plan:"free"}),
       });
-    } catch(e){}
+    }catch(e){}
     setLoading(false);
-    onLogin({name:name.trim(),email:email.trim(),city,country,industry,plan:"free"});
+    const u={name:name.trim(),email:email.trim(),city,country,industry,plan:"free"};
+    try{window.localStorage.setItem("chemform_user",JSON.stringify(u));}catch(e){}
+    onLogin(u);
   };
 
-  // ── Landing Page ──
-  if(!showForm) return(
-    <div style={{minHeight:"100vh",background:"#060b14",color:"#f1f5f9",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
-
-      {/* Nav */}
-      <div style={{borderBottom:"1px solid #1e293b",padding:"14px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#060b14",position:"sticky",top:0,zIndex:100}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:34,height:34,borderRadius:9,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⚗</div>
-          <div>
-            <div style={{fontWeight:900,fontSize:16}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-            <div style={{fontSize:9,color:"#475569",letterSpacing:"0.05em"}}>BY VAANI ENTERPRISES</div>
-          </div>
-        </div>
-        <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:700,fontSize:13,padding:"9px 20px",borderRadius:9,cursor:"pointer"}}>
-          Get Started Free →
-        </button>
-      </div>
-
-      {/* Hero */}
-      <div style={{textAlign:"center",padding:"60px 20px 40px",maxWidth:800,margin:"0 auto"}}>
-        <div style={{display:"inline-block",background:"#4f9cf922",border:"1px solid #4f9cf944",borderRadius:99,padding:"5px 16px",fontSize:12,color:"#4f9cf9",fontWeight:600,marginBottom:20}}>
-          🚀 India's First AI Chemical Formulation Platform
-        </div>
-        <h1 style={{fontSize:"clamp(28px,6vw,52px)",fontWeight:900,lineHeight:1.15,marginBottom:16,background:"linear-gradient(135deg,#f1f5f9,#94a3b8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-          Professional Chemical Formulations<br/>Powered by AI
-        </h1>
-        <p style={{color:"#64748b",fontSize:"clamp(14px,2vw,18px)",lineHeight:1.7,marginBottom:32,maxWidth:600,margin:"0 auto 32px"}}>
-          Access 250+ expert-verified formulations for paints, coatings, adhesives, cosmetics, fragrances, nutraceuticals and more. Optimise cost and performance with AI in seconds.
-        </p>
-        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:16}}>
-          <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"14px 32px",borderRadius:12,cursor:"pointer"}}>
-            Start Free — No Card Required
-          </button>
-          <button onClick={()=>setShowForm(true)} style={{background:"transparent",border:"1px solid #1e293b",color:"#94a3b8",fontWeight:600,fontSize:14,padding:"14px 24px",borderRadius:12,cursor:"pointer"}}>
-            View Plans →
-          </button>
-        </div>
-        <div style={{color:"#334155",fontSize:12}}>✓ Free forever plan &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ 250+ formulations</div>
-      </div>
-
-      {/* Stats */}
-      <div style={{display:"flex",justifyContent:"center",gap:"clamp(20px,4vw,60px)",padding:"30px 20px",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",flexWrap:"wrap",background:"#0a0f1e"}}>
-        {[
-          {n:"250+",l:"Formulations"},
-          {n:"13",l:"Categories"},
-          {n:"195",l:"Pharma APIs"},
-          {n:"AI",l:"Optimizer"},
-          {n:"Free",l:"To Start"},
-        ].map(s=>(
-          <div key={s.l} style={{textAlign:"center"}}>
-            <div style={{color:"#4f9cf9",fontWeight:900,fontSize:"clamp(22px,4vw,32px)"}}>{s.n}</div>
-            <div style={{color:"#475569",fontSize:12,marginTop:2}}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Categories */}
-      <div style={{padding:"50px 20px",maxWidth:900,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:32}}>
-          <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Every Chemical Industry Covered</h2>
-          <p style={{color:"#64748b",fontSize:14}}>From construction chemicals to luxury fragrances — professional formulations verified by industry experts</p>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10}}>
-          {[
-            {icon:"🏗️",label:"Drymix & Construction",desc:"Tile adhesive, grout, plaster, putty"},
-            {icon:"🎨",label:"Paints & Emulsions",desc:"Interior, exterior, enamel, distemper"},
-            {icon:"🛡️",label:"Coatings",desc:"Epoxy, PU, powder, stoving"},
-            {icon:"🔗",label:"Adhesives",desc:"PU, epoxy, PSA, silicone, rubber"},
-            {icon:"✨",label:"Cosmetics",desc:"Shampoo, cream, soap, toothpaste"},
-            {icon:"🧹",label:"Homecare",desc:"Dishwash, floor cleaner, detergent"},
-            {icon:"🖨️",label:"Inks",desc:"Flexo, gravure, offset, UV, inkjet"},
-            {icon:"🧵",label:"Sizing Agents",desc:"Warp sizing, paper sizing, softener"},
-            {icon:"🌸",label:"Fragrances",desc:"Musk, rose, oud, jasmine, amber"},
-            {icon:"💪",label:"Nutraceuticals",desc:"Whey, electrolytes, collagen, pre-workout"},
-            {icon:"💊",label:"Pharma API",desc:"195 active pharmaceutical ingredients"},
-            {icon:"⚗️",label:"ChemEng Pro",desc:"Resin synthesis, polymerisation"},
-          ].map(cat=>(
-            <div key={cat.label} style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:"14px 12px",textAlign:"center",transition:"all 0.2s",cursor:"pointer"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="#4f9cf944";e.currentTarget.style.background="#0d1626";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="#1e293b";e.currentTarget.style.background="#0a0f1e";}}>
-              <div style={{fontSize:24,marginBottom:6}}>{cat.icon}</div>
-              <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:3}}>{cat.label}</div>
-              <div style={{color:"#334155",fontSize:10,lineHeight:1.4}}>{cat.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Features */}
-      <div style={{background:"#0a0f1e",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",padding:"50px 20px"}}>
-        <div style={{maxWidth:900,margin:"0 auto"}}>
-          <h2 style={{textAlign:"center",color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:32}}>Everything a Formulator Needs</h2>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:16}}>
-            {[
-              {icon:"🤖",title:"AI Formula Optimizer",desc:"Reduce raw material cost or maximise performance with one click. AI analyses your formula and suggests specific ingredient changes with technical justification."},
-              {icon:"⚖️",title:"Batch Calculator",desc:"Enter your batch size and local RM prices. Get exact quantities and total cost for any batch size — kg, MT, or lbs."},
-              {icon:"✏️",title:"Live RM Price Editor",desc:"Enter your local raw material prices and see the formula cost update instantly. Compare your cost vs industry benchmark."},
-              {icon:"📊",title:"Performance Scores",desc:"Every formula has a 0-100 performance score. Hover/tap to understand what the score means for your application."},
-              {icon:"⚙️",title:"Manufacturing Process",desc:"Step-by-step manufacturing process, equipment list, and process flow diagram available for every formulation."},
-              {icon:"📩",title:"Custom Formulation Requests",desc:"Can't find what you need? Request any formulation. Our expert team delivers within 24 hours."},
-            ].map(f=>(
-              <div key={f.title} style={{padding:"18px",background:"#060b14",borderRadius:12,border:"1px solid #1e293b"}}>
-                <div style={{fontSize:28,marginBottom:10}}>{f.icon}</div>
-                <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:6}}>{f.title}</div>
-                <div style={{color:"#64748b",fontSize:12,lineHeight:1.6}}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Pricing preview */}
-      <div style={{padding:"50px 20px",maxWidth:900,margin:"0 auto",textAlign:"center"}}>
-        <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Simple, Transparent Pricing</h2>
-        <p style={{color:"#64748b",fontSize:14,marginBottom:32}}>Start free. Upgrade when you need more.</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:32}}>
-          {[
-            {name:"Free",price:"₹0",color:"#64748b",features:["3 formulas/category","3 AI optimizations","Batch calculator","Ads shown"]},
-            {name:"Starter",price:"₹749/mo",color:"#34d399",features:["All formulas","10 AI optimizations","Process & equipment","No ads"]},
-            {name:"Pro",price:"₹2,399/mo",color:"#4f9cf9",features:["All formulas","50 AI optimizations","Engineering design","Free formula requests"],highlight:true},
-            {name:"Enterprise",price:"₹8,249/mo",color:"#a78bfa",features:["Unlimited everything","ChemEng Pro","Detailed engineering","Unlimited requests"]},
-          ].map(p=>(
-            <div key={p.name} style={{background:p.highlight?"#0d1628":"#0a0f1e",border:`1px solid ${p.color}${p.highlight?"":"33"}`,borderRadius:14,padding:"18px 14px"}}>
-              {p.highlight&&<div style={{color:p.color,fontSize:9,fontWeight:800,letterSpacing:"0.08em",marginBottom:6}}>⭐ MOST POPULAR</div>}
-              <div style={{color:p.color,fontWeight:900,fontSize:16,marginBottom:4}}>{p.name}</div>
-              <div style={{color:"#f1f5f9",fontWeight:900,fontSize:22,marginBottom:12}}>{p.price}</div>
-              {p.features.map(f=><div key={f} style={{color:"#64748b",fontSize:11,marginBottom:4,textAlign:"left"}}>✓ {f}</div>)}
-            </div>
-          ))}
-        </div>
-        <button onClick={()=>setShowForm(true)} style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"14px 40px",borderRadius:12,cursor:"pointer"}}>
-          Start Free Today →
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div style={{borderTop:"1px solid #1e293b",padding:"24px",textAlign:"center",background:"#0a0f1e"}}>
-        <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:4}}>ChemForm Pro by Vaani Enterprises</div>
-        <div style={{color:"#334155",fontSize:12,marginBottom:8}}>India's leading AI chemical formulation platform</div>
-        <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
-          <a href="/privacy.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Privacy Policy</a>
-          <a href="/terms.html" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Terms of Service</a>
-          <a href="mailto:info@chemformpro.in" style={{color:"#475569",fontSize:11,textDecoration:"none"}}>Contact Us</a>
-        </div>
-        <div style={{color:"#1e293b",fontSize:10,marginTop:12}}>
-          Chemical formulation software · Paint formulation · Coating formulation · Adhesive formulation · Cosmetic formulation · Fragrance formulation · Nutraceutical formulation · Pharma API · Construction chemicals · Drymix formulation · India
-        </div>
-      </div>
-    </div>
-  );
-
   // ── Registration Form ──
-  return(
+  if(showForm) return(
     <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16,overflowY:"auto",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24,maxWidth:420,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:16}}>
           <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 10px"}}>⚗</div>
           <div style={{color:"#f1f5f9",fontWeight:900,fontSize:20}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
-          <div style={{color:"#475569",fontSize:12,marginTop:3}}>Create your free account</div>
+          <div style={{color:"#475569",fontSize:12,marginTop:3}}>Create your free account to save progress</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <div>
@@ -3250,12 +3100,204 @@ function LoginScreen({onLogin}){
           {err&&<div style={{color:"#f87171",fontSize:12,padding:"8px 12px",background:"#f8717111",borderRadius:8}}>{err}</div>}
           <button onClick={handleStart} disabled={loading}
             style={{padding:"13px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"wait":"pointer",marginTop:4}}>
-            {loading?"Saving...":"Start Using ChemForm Pro →"}
+            {loading?"Saving...":"Create Account →"}
           </button>
-          <div style={{textAlign:"center",color:"#334155",fontSize:11}}>
-            Free plan · No credit card · No password needed
+          <div style={{textAlign:"center",color:"#334155",fontSize:11}}>Free · No credit card · No password needed</div>
+          <button onClick={()=>setShowForm(false)} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>← Back</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Welcome / Landing Page ──
+  return(
+    <div style={{minHeight:"100vh",background:"#060b14",color:"#f1f5f9",fontFamily:"'DM Sans',system-ui,sans-serif",overflowX:"hidden"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        .lp-btn:hover{opacity:0.9;transform:translateY(-1px);}
+        .lp-card:hover{border-color:#4f9cf944!important;background:#0d1626!important;}
+        .lp-cat:hover{border-color:#4f9cf933!important;}
+      `}</style>
+
+      {/* Nav */}
+      <div style={{borderBottom:"1px solid #1e293b",padding:"14px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#060b14cc",backdropFilter:"blur(10px)",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⚗</div>
+          <div>
+            <div style={{fontWeight:900,fontSize:17,letterSpacing:"-0.3px"}}>ChemForm <span style={{color:"#4f9cf9"}}>Pro</span></div>
+            <div style={{fontSize:9,color:"#334155",letterSpacing:"0.06em",textTransform:"uppercase"}}>by Vaani Enterprises</div>
           </div>
-          <button onClick={()=>setShowForm(false)} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>← Back to home</button>
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <button onClick={()=>setShowForm(true)} style={{background:"transparent",border:"1px solid #1e293b",color:"#94a3b8",fontWeight:600,fontSize:13,padding:"8px 18px",borderRadius:8,cursor:"pointer"}}>
+            Register
+          </button>
+          <button onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+            style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:700,fontSize:13,padding:"9px 20px",borderRadius:8,cursor:"pointer"}}>
+            Explore Free →
+          </button>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <div style={{textAlign:"center",padding:"70px 24px 50px",maxWidth:820,margin:"0 auto"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#4f9cf922",border:"1px solid #4f9cf933",borderRadius:99,padding:"5px 16px",fontSize:12,color:"#4f9cf9",fontWeight:600,marginBottom:24}}>
+          🚀 India's First AI Chemical Formulation Platform
+        </div>
+        <h1 style={{fontSize:"clamp(28px,6vw,54px)",fontWeight:900,lineHeight:1.15,marginBottom:18,background:"linear-gradient(135deg,#f1f5f9 30%,#64748b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+          Professional Chemical Formulations,<br/>Powered by AI
+        </h1>
+        <p style={{color:"#64748b",fontSize:"clamp(14px,2.5vw,18px)",lineHeight:1.8,marginBottom:36,maxWidth:600,margin:"0 auto 36px"}}>
+          250+ expert-verified formulations for paints, coatings, adhesives, cosmetics, fragrances, nutraceuticals and pharma APIs. Optimise cost and performance with AI in seconds.
+        </p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <button className="lp-btn" onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+            style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"15px 36px",borderRadius:12,cursor:"pointer",transition:"all 0.2s"}}>
+            Explore Formulas Free →
+          </button>
+          <button className="lp-btn" onClick={()=>setShowForm(true)}
+            style={{background:"transparent",border:"1px solid #1e293b",color:"#94a3b8",fontWeight:600,fontSize:15,padding:"15px 28px",borderRadius:12,cursor:"pointer",transition:"all 0.2s"}}>
+            Create Free Account
+          </button>
+        </div>
+        <div style={{color:"#334155",fontSize:12,marginTop:14}}>✓ No credit card &nbsp;·&nbsp; ✓ No login required to browse &nbsp;·&nbsp; ✓ 250+ formulations</div>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:"flex",justifyContent:"center",gap:"clamp(24px,5vw,72px)",padding:"28px 24px",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",background:"#0a0f1e",flexWrap:"wrap"}}>
+        {[["250+","Formulations"],["13","Categories"],["195","Pharma APIs"],["AI","Optimizer"],["₹0","To Start"]].map(([n,l])=>(
+          <div key={l} style={{textAlign:"center"}}>
+            <div style={{color:"#4f9cf9",fontWeight:900,fontSize:"clamp(22px,5vw,36px)"}}>{n}</div>
+            <div style={{color:"#475569",fontSize:12,marginTop:3}}>{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Categories */}
+      <div style={{padding:"56px 24px",maxWidth:960,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:36}}>
+          <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Every Chemical Industry Covered</h2>
+          <p style={{color:"#64748b",fontSize:14}}>Expert-verified formulations across 13 categories</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:10}}>
+          {[
+            {icon:"🏗️",label:"Drymix",eg:"Tile adhesive, grout, putty"},
+            {icon:"🎨",label:"Paints",eg:"Emulsion, enamel, distemper"},
+            {icon:"🛡️",label:"Coatings",eg:"Epoxy, PU, powder coat"},
+            {icon:"🔗",label:"Adhesives",eg:"PU, epoxy, silicone, PSA"},
+            {icon:"✨",label:"Cosmetics",eg:"Shampoo, cream, soap"},
+            {icon:"🧹",label:"Homecare",eg:"Dishwash, floor cleaner"},
+            {icon:"🌸",label:"Fragrances",eg:"Musk, oud, rose, jasmine"},
+            {icon:"💪",label:"Nutraceuticals",eg:"Whey, collagen, electrolytes"},
+            {icon:"🖨️",label:"Inks",eg:"Flexo, gravure, UV"},
+            {icon:"🧵",label:"Sizing Agents",eg:"Warp sizing, AKD, ASA"},
+            {icon:"🌱",label:"Agrochemicals",eg:"Insecticides, herbicides"},
+            {icon:"💊",label:"Pharma API",eg:"195 active ingredients"},
+            {icon:"⚗️",label:"ChemEng Pro",eg:"Resin & polymer synthesis"},
+          ].map(cat=>(
+            <div key={cat.label} className="lp-cat"
+              onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+              style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:"14px 10px",textAlign:"center",cursor:"pointer",transition:"all 0.2s"}}>
+              <div style={{fontSize:22,marginBottom:6}}>{cat.icon}</div>
+              <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:3}}>{cat.label}</div>
+              <div style={{color:"#334155",fontSize:9,lineHeight:1.4}}>{cat.eg}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Features */}
+      <div style={{background:"#0a0f1e",borderTop:"1px solid #1e293b",borderBottom:"1px solid #1e293b",padding:"56px 24px"}}>
+        <div style={{maxWidth:960,margin:"0 auto"}}>
+          <h2 style={{textAlign:"center",color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:36}}>Everything a Formulator Needs</h2>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
+            {[
+              {icon:"🤖",t:"AI Formula Optimizer",d:"Reduce cost or maximise performance with one click. AI analyses every ingredient and explains each change with technical justification."},
+              {icon:"⚖️",t:"Batch Calculator",d:"Enter batch size and local RM prices. Get exact quantities and total cost — in kg, MT or lbs. Updates instantly."},
+              {icon:"✏️",t:"Live RM Price Editor",d:"Enter your local raw material prices and see formula cost update in real time. Compare vs industry benchmark."},
+              {icon:"📊",t:"Performance Scores",d:"Every formula rated 0–100. Hover or tap to understand what the score means for your specific application."},
+              {icon:"⚙️",t:"Process + Equipment",d:"Full manufacturing process, equipment list and process notes. Available as a one-time purchase per formula."},
+              {icon:"📩",t:"Custom Formulation",d:"Need something specific? Submit a request. Our expert team delivers a complete formulation within 24 hours."},
+            ].map(f=>(
+              <div key={f.t} className="lp-card" style={{padding:20,background:"#060b14",borderRadius:14,border:"1px solid #1e293b",transition:"all 0.2s"}}>
+                <div style={{fontSize:28,marginBottom:10}}>{f.icon}</div>
+                <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:6}}>{f.t}</div>
+                <div style={{color:"#64748b",fontSize:12,lineHeight:1.7}}>{f.d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Founder Section */}
+      <div style={{padding:"56px 24px",maxWidth:800,margin:"0 auto"}}>
+        <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:"36px 32px",display:"flex",gap:28,flexWrap:"wrap",alignItems:"flex-start"}}>
+          <div style={{width:72,height:72,borderRadius:36,background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>👨‍🔬</div>
+          <div style={{flex:1,minWidth:220}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}>
+              <div style={{color:"#f1f5f9",fontWeight:800,fontSize:18}}>Chetan Jain</div>
+              <div style={{background:"#4f9cf922",border:"1px solid #4f9cf933",borderRadius:99,padding:"2px 10px",fontSize:10,color:"#4f9cf9",fontWeight:600}}>IIT Bombay Alumni</div>
+            </div>
+            <div style={{color:"#4f9cf9",fontSize:12,fontWeight:600,marginBottom:14}}>Founder, Vaani Enterprises · ChemForm Pro</div>
+            <p style={{color:"#64748b",fontSize:13,lineHeight:1.85,marginBottom:14}}>
+              Chetan Jain is a Chemical Engineering graduate from the Indian Institute of Technology Bombay (IIT Bombay), one of India's most prestigious engineering institutions. With rich industry experience spanning paints, coatings, construction chemicals, adhesives and specialty chemicals, he has worked across formulation R&D, production scale-up and technical marketing roles.
+            </p>
+            <p style={{color:"#64748b",fontSize:13,lineHeight:1.85,marginBottom:18}}>
+              ChemForm Pro was built out of a simple frustration — formulation knowledge is scattered, expensive and inaccessible to most small and mid-size manufacturers. Chetan founded Vaani Enterprises to democratise access to professional formulation expertise through technology, making it affordable for every chemist and manufacturer regardless of their scale.
+            </p>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              {["IIT Bombay — B.Tech Chemical Engineering","Paints & Coatings","Construction Chemicals","Specialty Chemicals","Adhesives & Sealants"].map(tag=>(
+                <span key={tag} style={{background:"#1e293b",color:"#64748b",fontSize:10,padding:"4px 10px",borderRadius:99,fontWeight:500}}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing */}
+      <div style={{background:"#0a0f1e",borderTop:"1px solid #1e293b",padding:"56px 24px"}}>
+        <div style={{maxWidth:700,margin:"0 auto",textAlign:"center"}}>
+          <h2 style={{color:"#f1f5f9",fontSize:"clamp(20px,4vw,32px)",fontWeight:800,marginBottom:8}}>Simple, Transparent Pricing</h2>
+          <p style={{color:"#64748b",fontSize:14,marginBottom:36}}>Start free. Pay only for what you need.</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:24}}>
+            <div style={{background:"#060b14",border:"1px solid #1e293b",borderRadius:14,padding:24,textAlign:"left"}}>
+              <div style={{color:"#64748b",fontWeight:800,fontSize:16,marginBottom:4}}>Free</div>
+              <div style={{color:"#f1f5f9",fontWeight:900,fontSize:28,marginBottom:12}}>₹0</div>
+              {["Browse all formula names","3 free formulas per category (full)","1 AI optimization","Ads supported"].map(f=>(
+                <div key={f} style={{color:"#64748b",fontSize:12,marginBottom:5,display:"flex",gap:6}}><span style={{color:"#34d399"}}>✓</span>{f}</div>
+              ))}
+              <button onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+                style={{width:"100%",marginTop:16,padding:"11px",background:"#1e293b",border:"none",borderRadius:10,color:"#f1f5f9",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                Start Free →
+              </button>
+            </div>
+            <div style={{background:"#0d1628",border:"2px solid #4f9cf966",borderRadius:14,padding:24,textAlign:"left",position:"relative"}}>
+              <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",color:"#fff",fontSize:9,fontWeight:700,padding:"3px 12px",borderRadius:99,whiteSpace:"nowrap"}}>BEST VALUE</div>
+              <div style={{color:"#4f9cf9",fontWeight:800,fontSize:16,marginBottom:4}}>Annual</div>
+              <div style={{color:"#f1f5f9",fontWeight:900,fontSize:28,marginBottom:2}}>₹3,999<span style={{color:"#475569",fontSize:12,fontWeight:400}}>/year</span></div>
+              <div style={{color:"#334155",fontSize:10,marginBottom:12}}>≈ ₹333/month</div>
+              {["All 250+ formulas unlocked","Batch calculator","30 AI optimizations/month","365-day access · No auto-debit"].map(f=>(
+                <div key={f} style={{color:"#94a3b8",fontSize:12,marginBottom:5,display:"flex",gap:6}}><span style={{color:"#4f9cf9"}}>✓</span>{f}</div>
+              ))}
+              <button onClick={()=>window.open(RZP.annual,"_blank")}
+                style={{width:"100%",marginTop:16,padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+                Get Annual Access →
+              </button>
+            </div>
+          </div>
+          <div style={{color:"#334155",fontSize:11}}>Or pay as you go: ₹49/formula · ₹99/AI credit · ₹999/process · ₹999/custom formulation</div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{borderTop:"1px solid #1e293b",padding:"24px",textAlign:"center",background:"#060b14"}}>
+        <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:4}}>ChemForm Pro by Vaani Enterprises</div>
+        <div style={{color:"#334155",fontSize:11,marginBottom:10}}>Founded by Chetan Jain · IIT Bombay Chemical Engineering Alumni</div>
+        <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
+          <a href="/privacy.html" style={{color:"#334155",fontSize:11,textDecoration:"none"}}>Privacy Policy</a>
+          <a href="/terms.html" style={{color:"#334155",fontSize:11,textDecoration:"none"}}>Terms of Service</a>
+          <a href="mailto:info@chemformpro.in" style={{color:"#334155",fontSize:11,textDecoration:"none"}}>info@chemformpro.in</a>
         </div>
       </div>
     </div>
@@ -4698,6 +4740,7 @@ export default function App(){
       </div>
     </div>
   );
+  if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
     <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#060b14",height:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",overflow:"hidden"}}>
