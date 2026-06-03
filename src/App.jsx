@@ -3120,7 +3120,7 @@ function LoginScreen({onLogin}){
           <button onClick={()=>setShowForm(true)} style={{background:"transparent",border:"1px solid #1e293b",color:"#94a3b8",fontWeight:600,fontSize:13,padding:"8px 18px",borderRadius:8,cursor:"pointer"}}>
             Register
           </button>
-          <button onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+          <button onClick={()=>(()=>{const g={name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};try{window.localStorage.setItem("chemform_user",JSON.stringify(g));}catch(e){}onLogin(g);})()}
             style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:700,fontSize:13,padding:"9px 20px",borderRadius:8,cursor:"pointer"}}>
             Explore Free →
           </button>
@@ -3139,7 +3139,7 @@ function LoginScreen({onLogin}){
           250+ expert-verified formulations for paints, coatings, adhesives, cosmetics, fragrances, nutraceuticals and pharma APIs. Optimise cost and performance with AI in seconds.
         </p>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button className="lp-btn" onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+          <button className="lp-btn" onClick={()=>(()=>{const g={name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};try{window.localStorage.setItem("chemform_user",JSON.stringify(g));}catch(e){}onLogin(g);})()}
             style={{background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",color:"#fff",fontWeight:800,fontSize:16,padding:"15px 36px",borderRadius:12,cursor:"pointer",transition:"all 0.2s"}}>
             Explore Formulas Free →
           </button>
@@ -3184,7 +3184,7 @@ function LoginScreen({onLogin}){
             {icon:"⚗️",label:"ChemEng Pro",eg:"Resin & polymer synthesis"},
           ].map(cat=>(
             <div key={cat.label} className="lp-cat"
-              onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+              onClick={()=>(()=>{const g={name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};try{window.localStorage.setItem("chemform_user",JSON.stringify(g));}catch(e){}onLogin(g);})()}
               style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:12,padding:"14px 10px",textAlign:"center",cursor:"pointer",transition:"all 0.2s"}}>
               <div style={{fontSize:22,marginBottom:6}}>{cat.icon}</div>
               <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:3}}>{cat.label}</div>
@@ -3254,7 +3254,7 @@ function LoginScreen({onLogin}){
               {["Browse all formula names","3 free formulas per category (full)","1 AI optimization","Ads supported"].map(f=>(
                 <div key={f} style={{color:"#64748b",fontSize:12,marginBottom:5,display:"flex",gap:6}}><span style={{color:"#34d399"}}>✓</span>{f}</div>
               ))}
-              <button onClick={()=>onLogin({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true})}
+              <button onClick={()=>(()=>{const g={name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};try{window.localStorage.setItem("chemform_user",JSON.stringify(g));}catch(e){}onLogin(g);})()}
                 style={{width:"100%",marginTop:16,padding:"11px",background:"#1e293b",border:"none",borderRadius:10,color:"#f1f5f9",fontWeight:700,fontSize:13,cursor:"pointer"}}>
                 Start Free →
               </button>
@@ -4613,7 +4613,7 @@ Regards`);
 }
 
 export default function App(){
-  const [user,setUser]=useState({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true});
+  const [user,setUser]=useState(null);
   const [planKey,setPlanKey]=useState("free");
   const [isMobile,setIsMobile]=useState(window.innerWidth<768);
   const [mobileView,setMobileView]=useState("list");
@@ -4700,6 +4700,7 @@ export default function App(){
       </div>
     </div>
   );
+  if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
     <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#060b14",height:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",overflow:"hidden"}}>
