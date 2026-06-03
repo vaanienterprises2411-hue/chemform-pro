@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { sendOTP, verifyOTP, getProfile, upsertProfile, incrementUsage, setSession, getSession } from "./supabase.js";
 
 const INR_TO_USD = 1 / 83.5;
 const THEME_BLUE = "#4f9cf9";
