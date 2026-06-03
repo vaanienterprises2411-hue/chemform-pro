@@ -4613,7 +4613,7 @@ Regards`);
 }
 
 export default function App(){
-  const [user,setUser]=useState(null);
+  const [user,setUser]=useState({name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true});
   const [planKey,setPlanKey]=useState("free");
   const [isMobile,setIsMobile]=useState(window.innerWidth<768);
   const [mobileView,setMobileView]=useState("list");
@@ -4648,19 +4648,13 @@ export default function App(){
       const saved=window.localStorage.getItem("chemform_user");
       if(saved){
         const u=JSON.parse(saved);
-        if(u&&u.email&&u.name){
+        if(u&&u.name){
           setUser(u);
           setPlanKey(u.plan||"free");
           if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
         }
       }
     }catch(e){}
-    // If no saved user, create guest session automatically
-    if(!window.localStorage.getItem("chemform_user")){
-      const guest = {name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};
-      setUser(guest);
-      setCatId("paints");
-    }
     setAppReady(true);
   },[]);
 
@@ -4706,7 +4700,6 @@ export default function App(){
       </div>
     </div>
   );
-  if(!user) return <LoginScreen onLogin={handleLogin}/>;
 
   return(
     <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#060b14",height:"100vh",color:"#f1f5f9",display:"flex",flexDirection:"column",overflow:"hidden"}}>
