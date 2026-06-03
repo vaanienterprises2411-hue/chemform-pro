@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { sendOTP, verifyOTP, getProfile, upsertProfile, incrementUsage, setSession, getSession } from "./supabase.js";
 
-// ─── Currency (all base costs stored in INR) ───────────────────────────────
 const INR_TO_USD = 1 / 83.5;
 const THEME_BLUE = "#4f9cf9";
 const fmtCur = (inr, cur) => {
@@ -9,7 +8,6 @@ const fmtCur = (inr, cur) => {
   return `$${(Number(inr) * INR_TO_USD).toFixed(3)}`;
 };
 
-// ─── CORRECT COST CALCULATION ─────────────────────────────────────────────
 // Each ingredient has: p = percentage by weight, c = cost per kg in INR
 // Formula cost/kg = SUM of (p/100 * c) for all ingredients
 // This is always correct regardless of whether percentages add to 100 or not
@@ -21,13 +19,11 @@ const calcCostPerKg = (ingredients, customPrices = {}) => {
   }, 0);
 };
 
-// ─── Plans ─────────────────────────────────────────────────────────────────
 const PLANS = {
   free:   { name:"Free",   inr:0,    color:"#64748b", ai:1,   hasFormulas:false },
   annual: { name:"Annual", inr:3999, color:"#4f9cf9", ai:30,  hasFormulas:true  },
 };
 
-// ─── Razorpay Payment Links ───────────────────────────────────────────────────
 const RZP = {
   annual:    "https://rzp.io/rzp/OsfvTlgL",  // ₹3,999/year
   formula49: "https://rzp.io/rzp/UGVHhQ7D",  // ₹49 single formula
@@ -76,7 +72,6 @@ const CATEGORIES = [
   { id:"request",    label:"+ Request", icon:"📩", color:"#f59e0b", special:true },
 ];
 
-// ─── ALL COSTS IN INR/kg ──────────────────────────────────────────────────
 // Cost calculation verification example:
 // White Wall Putty:
 //   White Cement 22% @ ₹12/kg  → 0.22 × 12 = ₹2.64
@@ -1911,7 +1906,6 @@ const FORMULAS = {
       process:"This is a pharmaceutical active pharmaceutical ingredient (API). Complete formulation, synthesis route, specifications, regulatory documentation (DMF/CEP), analytical methods (HPLC, dissolution), and manufacturing process are available after payment. Request a quote for detailed technical package." },
   ],
 
-
   agro:[
     { id:"ag1", name:"Carbofuran 3% CG (Carbofuran Granules)", sub:"Carbamate insecticide — soil application for root insects", score:82, tags:["insecticide","granules","carbamate"], free:true,
       ingredients:[
@@ -2896,7 +2890,6 @@ APPLICATIONS: Adhesives (corrugated box), silica gel precursor, concrete waterpr
   ],
 };
 
-// ─── Shared Components ─────────────────────────────────────────────────────
 const Pill = ({label, color="#64748b"}) => (
   <span style={{background:color+"22",color,border:`1px solid ${color}44`,borderRadius:99,fontSize:9,fontWeight:700,padding:"2px 7px",letterSpacing:"0.05em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{label}</span>
 );
@@ -2944,7 +2937,6 @@ function Ring({score, size=44}){
   );
 }
 
-// ─── Payment Portal (Annual Plan Activation) ─────────────────────────────────
 function PaymentPortal({onSuccess, onCancel}){
   const [step,setStep]=useState("confirm");
   const [email,setEmail]=useState("");
@@ -3018,8 +3010,6 @@ function PaymentPortal({onSuccess, onCancel}){
   );
 }
 
-
-// ─── OTP Login ────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
   const [showForm,setShowForm]=useState(false);
   const [name,setName]=useState("");
@@ -3053,7 +3043,6 @@ function LoginScreen({onLogin}){
     onLogin(u);
   };
 
-  // ── Registration Form ──
   if(showForm) return(
     <div style={{position:"fixed",inset:0,background:"#060b14",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16,overflowY:"auto",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:24,maxWidth:420,width:"100%"}}>
@@ -3109,7 +3098,6 @@ function LoginScreen({onLogin}){
     </div>
   );
 
-  // ── Welcome / Landing Page ──
   return(
     <div style={{minHeight:"100vh",background:"#060b14",color:"#f1f5f9",fontFamily:"'DM Sans',system-ui,sans-serif",overflowX:"hidden"}}>
       <style>{`
@@ -3304,8 +3292,6 @@ function LoginScreen({onLogin}){
   );
 }
 
-
-// ─── Pricing Modal ───────────────────────────────────────────────────────────
 function PricingModal({onClose, currency, onSelectPlan, currentPlan}){
   const openPay=(link)=>{ window.open(link,"_blank"); };
   return(
@@ -3384,8 +3370,6 @@ function PricingModal({onClose, currency, onSelectPlan, currentPlan}){
   );
 }
 
-
-// ─── Quota Badge ──────────────────────────────────────────────────────────
 function QBadge({used, limit, label, color="#34d399"}){
   const left=limit===999?999:Math.max(0,limit-used);
   const pct=limit>0&&limit!==999?Math.min(100,(used/limit)*100):0;
@@ -3399,7 +3383,6 @@ function QBadge({used, limit, label, color="#34d399"}){
   );
 }
 
-// ─── Formula Detail ───────────────────────────────────────────────────────
 function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade}){
   const [tab,setTab]=useState("formula");
   // RM prices in INR — user edits per their local market
@@ -3690,7 +3673,6 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
   );
 }
 
-// ─── AI Optimizer ─────────────────────────────────────────────────────────
 function AIOptimizer({formula, planKey, currency, usage, onUseQuota, onUpgrade}){
   const [goal,setGoal]=useState("balanced");
   const [targetCost,setTargetCost]=useState("");
@@ -3885,7 +3867,6 @@ Respond ONLY with valid JSON (no markdown, no text outside):
   );
 }
 
-// ─── Batch Calc ───────────────────────────────────────────────────────────
 function BatchCalc({formula, currency}){
   const [size,setSize]=useState("100");
   const [unit,setUnit]=useState("kg");
@@ -3976,8 +3957,6 @@ function BatchCalc({formula, currency}){
   );
 }
 
-
-// ─── Request Formulation Tab ──────────────────────────────────────────────
 function RequestFormula({user, planKey, currency, onUpgrade}){
   const isFree    = planKey === "free";
   const isStarter = planKey === "starter";
@@ -4025,7 +4004,6 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
     setPayStep("payment");
   };
 
-  // ── Done state ──
   if(payStep==="done") return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px",textAlign:"center",flex:1}}>
       <div style={{fontSize:52,marginBottom:14}}>✅</div>
@@ -4045,7 +4023,6 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
     </div>
   );
 
-  // ── Payment simulation overlay ──
   if(payStep==="payment"||payStep==="processing") return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center",flex:1}}>
       <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:20,padding:28,maxWidth:380,width:"100%"}}>
@@ -4124,7 +4101,6 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
     </div>
   );
 
-  // ── Main form ──
   return(
     <div style={{maxWidth:600,margin:"0 auto",padding:"20px 16px"}}>
 
@@ -4221,8 +4197,6 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
   );
 }
 
-
-// ─── Pharma Panel ─────────────────────────────────────────────────────────────
 function PharmaPanel({planKey, currency, onUpgrade}){
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
@@ -4366,7 +4340,6 @@ function PharmaPanel({planKey, currency, onUpgrade}){
   );
 }
 
-// ─── Inline Ad (inside formula tab) ─────────────────────────────────────────
 function InlineAd(){
   const [i,setI]=useState(0);
   const ads=[
@@ -4393,7 +4366,6 @@ function InlineAd(){
   );
 }
 
-// ─── Banner Ad ────────────────────────────────────────────────────────────
 function BannerAd({onUpgrade, inline=false}){
   const [i,setI]=useState(0);
   const ads=[
@@ -4434,7 +4406,6 @@ function BannerAd({onUpgrade, inline=false}){
   );
 }
 
-// ─── ChemEng Panel ────────────────────────────────────────────────────────
 function ChemEngPanel({planKey, currency, onUpgrade}){
   const [sel,setSel]=useState(null);
   const [search,setSearch]=useState("");
@@ -4642,10 +4613,6 @@ Regards`);
   );
 }
 
-
-
-
-// ─── Root ─────────────────────────────────────────────────────────────────
 export default function App(){
   const [user,setUser]=useState(null);
   const [planKey,setPlanKey]=useState("free");
