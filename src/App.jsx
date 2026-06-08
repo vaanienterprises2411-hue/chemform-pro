@@ -4666,6 +4666,12 @@ export default function App(){
           if(saved){ u=JSON.parse(saved); }
         }catch(e){}
 
+        // If returning from Razorpay and no user, create guest so app loads
+        if(paymentSuccess && !u){
+          u = {name:"Guest",email:"",industry:"paints",plan:"free",isGuest:true};
+          try{window.localStorage.setItem("chemform_user",JSON.stringify(u));}catch(e){}
+        }
+
         if(u&&u.name){
           setUser(u);
           setPlanKey(u.plan||"free");
@@ -4674,39 +4680,49 @@ export default function App(){
 
         // ── Handle successful Razorpay redirect ─────────────────────────────
         if(paymentSuccess){
-          // Clean URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-
-          // Apply unlock based on payment type
+          // Save unlock to localStorage FIRST before anything else
           if(rzpType.includes("ANNUAL")){
-            const updated = {...(u||{}), plan:"annual", planPaymentId:rzpPaymentId};
-            setUser(updated); setPlanKey("annual");
-            try{window.localStorage.setItem("chemform_user",JSON.stringify(updated));}catch(e){}
+            const u2 = {...(u||{}), plan:"annual", planPaymentId:rzpPaymentId};
+            try{window.localStorage.setItem("chemform_user",JSON.stringify(u2));}catch(e){}
+            setUser(u2); setPlanKey("annual");
             setShowPaymentSuccess({type:"annual", message:"Annual plan activated! All 250+ formulas unlocked."});
 
           } else if(rzpType.includes("FORMULA")){
-            // Unlock all formulas as we can't know which one without formula_id
-            // Store payment ID so worker can verify
-            const ul = JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
-            ul.push("paid_"+rzpPaymentId);
-            window.localStorage.setItem("chemform_unlocked", JSON.stringify(ul));
-            setUnlockedFormulas(prev=>[...prev, "paid_"+rzpPaymentId]);
-            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! Go back to your formula."});
+            try{
+              const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+              ul.push("paid_"+rzpPaymentId);
+              window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
+              setUnlockedFormulas(prev=>[...new Set([...prev,"paid_"+rzpPaymentId])]);
+            }catch(e){}
+            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! It is now highlighted in green in the list."});
 
           } else if(rzpType.includes("AI10")){
-            setUsage(prev=>({...prev, extraAi:(prev.extraAi||0)+10}));
-            setShowPaymentSuccess({type:"ai", message:"10 AI credits added to your account!"});
+            try{
+              const usage2=JSON.parse(window.localStorage.getItem("chemform_usage")||"{}");
+              usage2.extraAi=(usage2.extraAi||0)+10;
+              window.localStorage.setItem("chemform_usage",JSON.stringify(usage2));
+            }catch(e){}
+            setUsage(prev=>({...prev,extraAi:(prev.extraAi||0)+10}));
+            setShowPaymentSuccess({type:"ai", message:"10 AI credits added!"});
 
-          } else if(rzpType.includes("AI-99")){
-            setUsage(prev=>({...prev, extraAi:(prev.extraAi||0)+1}));
-            setShowPaymentSuccess({type:"ai", message:"1 AI credit added to your account!"});
+          } else if(rzpType.includes("AI-99")||rzpType.includes("AI99")){
+            try{
+              const usage2=JSON.parse(window.localStorage.getItem("chemform_usage")||"{}");
+              usage2.extraAi=(usage2.extraAi||0)+1;
+              window.localStorage.setItem("chemform_usage",JSON.stringify(usage2));
+            }catch(e){}
+            setUsage(prev=>({...prev,extraAi:(prev.extraAi||0)+1}));
+            setShowPaymentSuccess({type:"ai", message:"1 AI credit added!"});
 
           } else if(rzpType.includes("PROCESS")){
-            setShowPaymentSuccess({type:"process", message:"Process unlocked! Email info@chemformpro.in with formula name to receive the process details."});
+            setShowPaymentSuccess({type:"process", message:"Process unlocked! Email info@chemformpro.in with formula name to receive details."});
 
           } else if(rzpType.includes("CUSTOM")){
-            setShowPaymentSuccess({type:"custom", message:"Custom formulation request paid! Fill the request form to submit your requirements."});
+            setShowPaymentSuccess({type:"custom", message:"Custom request paid! Fill the request form to submit your requirements."});
           }
+
+          // Clean URL after applying unlock
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
 
       }catch(e){ console.error(e); }
