@@ -3023,63 +3023,18 @@ function PaymentPortal({onSuccess, onCancel}){
 
 // --- Formula Paywall Component ---
 function FormulaPaywall({formulaId, formulaName, onUnlock}){
-  const [step,setStep]=useState("lock"); // lock | verify | checking
-  const [email,setEmail]=useState("");
-  const [err,setErr]=useState("");
-
-  const handleVerify=async()=>{
-    if(!email.trim()||!email.includes("@")){
-      setErr("Please enter the email you used during payment");
-      return;
-    }
-    setStep("checking");
-    // Check Supabase for payment
-    const unlocks = await fetchUnlocks(email.trim());
-    if(unlocks.allFormulas||unlocks.annual||
-      (unlocks.formulas&&unlocks.formulas.length>0)){
-      onUnlock(formulaId);
-    } else {
-      setStep("verify");
-      setErr("No payment found for this email. If you just paid, wait 2 minutes and try again. Or email info@chemformpro.in");
-    }
-  };
-
-  if(step==="checking") return(
-    <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
-      <div style={{fontSize:30,marginBottom:8}}>⏳</div>
-      <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14}}>Checking payment...</div>
-    </div>
-  );
-
-  if(step==="verify") return(
-    <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
-      <div style={{fontSize:30,marginBottom:8}}>✅</div>
-      <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:6}}>Already paid? Enter your email to unlock</div>
-      <div style={{color:"#64748b",fontSize:11,marginBottom:12,lineHeight:1.6}}>
-        Enter the email you used during Razorpay payment. We will verify automatically.
-      </div>
-      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" type="email"
-        style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box",marginBottom:8}}/>
-      {err&&<div style={{color:"#f87171",fontSize:11,marginBottom:8,textAlign:"left"}}>{err}</div>}
-      <button onClick={handleVerify}
-        style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
-        Verify Payment and Unlock ->
-      </button>
-      <div style={{color:"#334155",fontSize:10}}>
-        Issues? Email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your payment screenshot
-      </div>
-      <button onClick={()=>setStep("lock")} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer",marginTop:8}}>Go back</button>
-    </div>
-  );
-
+  // Customer pays -> Razorpay redirects back with payment_id in URL -> auto unlocked
+  // If they closed tab before redirect, they can self-unlock here - we trust them
+  // Any fraud (Rs.49) is not worth the customer trust damage of blocking
   return(
     <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
       <div style={{fontSize:36,marginBottom:10}}>🔒</div>
       <div style={{color:"#f1f5f9",fontWeight:800,fontSize:15,marginBottom:6}}>Full Formula Locked</div>
       <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>
-        Unlock full ingredients, percentages and RM costs for: <b style={{color:"#94a3b8"}}>{formulaName}</b>
+        Unlock full ingredients, percentages and RM costs for:<br/>
+        <b style={{color:"#94a3b8"}}>{formulaName}</b>
       </div>
-      <button onClick={()=>{window.open(RZP.formula49,"_blank");setStep("verify");}}
+      <button onClick={()=>window.open(RZP.formula49,"_blank")}
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
         Unlock this formula — Rs.49 ->
       </button>
@@ -3087,10 +3042,20 @@ function FormulaPaywall({formulaId, formulaName, onUnlock}){
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
         All 250+ formulas — Rs.3,999/yr ->
       </button>
-      <button onClick={()=>setStep("verify")}
-        style={{background:"none",border:"none",color:"#4f9cf9",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>
-        Already paid? Click here to unlock ->
-      </button>
+      <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:9,padding:"10px 12px",marginTop:4}}>
+        <div style={{color:"#475569",fontSize:11,marginBottom:6}}>Already paid? Razorpay should have redirected you back automatically.</div>
+        <div style={{color:"#334155",fontSize:10,marginBottom:8}}>If you were not redirected, click below to unlock — or email us with your payment screenshot.</div>
+        <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={()=>onUnlock(formulaId)}
+            style={{padding:"7px 16px",background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#94a3b8",fontWeight:700,fontSize:11,cursor:"pointer"}}>
+            I have paid — Unlock Now
+          </button>
+          <a href="mailto:info@chemformpro.in?subject=Formula Unlock Help"
+            style={{padding:"7px 16px",background:"transparent",border:"1px solid #334155",borderRadius:8,color:"#4f9cf9",fontWeight:700,fontSize:11,cursor:"pointer",textDecoration:"none"}}>
+            Email Us
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
