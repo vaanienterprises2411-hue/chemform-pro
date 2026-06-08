@@ -3469,7 +3469,7 @@ function QBadge({used, limit, label, color="#34d399"}){
   );
 }
 
-function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade}){
+function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade, unlockedFormulas=[], onUnlock}){
   const [tab,setTab]=useState("formula");
   // RM prices in INR — user edits per their local market
   const [rmPrices,setRmPrices]=useState({});
@@ -3597,12 +3597,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
             const isLocked = planKey==="free" && !formula.free && !unlockedFormulas.includes(formula.id);
             if(isLocked) return(
               <FormulaPaywall formulaId={formula.id} formulaName={formula.name} onUnlock={(fid)=>{
-                try{
-                  const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
-                  if(!ul.includes(fid)) ul.push(fid);
-                  window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
-                }catch(e){}
-                setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
+                if(onUnlock) onUnlock(fid);
               }}/>
             );
             return(
@@ -3653,7 +3648,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
                       <div style={{color:"#475569",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Related Formulas</div>
                       <div style={{display:"flex",flexDirection:"column",gap:6}}>
                         {related.map(rf=>{
-                          const rfCost=calcCostPerKg(rf.ingredients);
+                          const rfCost=rf.ingredients?rf.ingredients.reduce((s,i)=>s+(Number(i.p)/100)*Number(i.c),0):0;
                           const rfCol=rf.score>=90?"#34d399":rf.score>=80?"#e8a838":"#f87171";
                           return(
                             <div key={rf.id} onClick={()=>{setSelected(rf);setRightTab("formula");window.scrollTo(0,0);}}
@@ -4962,7 +4957,10 @@ export default function App(){
                   {priority.includes(catId)&&<div style={{color:"#34d399",fontSize:11,marginTop:4}}>★ Priority category for your industry</div>}
                 </div>
               )}
-              {selected&&rightTab==="formula"&&<FormulaDetail formula={selected} currency={currency} planKey={planKey} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
+              {selected&&rightTab==="formula"&&<FormulaDetail formula={selected} currency={currency} planKey={planKey} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade} unlockedFormulas={unlockedFormulas} onUnlock={(fid)=>{
+                try{const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");if(!ul.includes(fid))ul.push(fid);window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));}catch(e){}
+                setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
+              }}/>}
               {selected&&rightTab==="optimizer"&&<AIOptimizer formula={selected} planKey={planKey} currency={currency} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
               {selected&&rightTab==="batch"&&(
                 planKey==="free"?(
