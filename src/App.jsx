@@ -4655,6 +4655,9 @@ export default function App(){
         const rzpPaymentId = params.get("razorpay_payment_id");
         const rzpType = params.get("type") || "";
         const rzpStatus = params.get("razorpay_payment_link_status");
+        const rzpSignature = params.get("razorpay_signature");
+        // Payment Pages use razorpay_signature, Payment Links use razorpay_payment_link_status=paid
+        const paymentSuccess = rzpPaymentId && (rzpStatus==="paid" || rzpSignature);
 
         // ── Load saved user ─────────────────────────────────────────────────
         let u = null;
@@ -4670,7 +4673,7 @@ export default function App(){
         }
 
         // ── Handle successful Razorpay redirect ─────────────────────────────
-        if(rzpPaymentId && rzpStatus==="paid"){
+        if(paymentSuccess){
           // Clean URL
           window.history.replaceState({}, document.title, window.location.pathname);
 
