@@ -3036,8 +3036,10 @@ function FormulaPaywall({formulaId, formulaName, onUnlock}){
         <b style={{color:"#94a3b8"}}>{formulaName}</b>
       </div>
       <button onClick={()=>{
-          // Store which formula is being unlocked BEFORE navigating
-          try{window.localStorage.setItem("chemform_pending_formula", formulaId);}catch(e){}
+          try{
+            window.localStorage.setItem("chemform_pending_formula", formulaId);
+            window.localStorage.setItem("chemform_pending_formula_name", formulaName);
+          }catch(e){}
           window.location.href = RZP.formula49;
         }}
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
@@ -4681,6 +4683,12 @@ export default function App(){
           if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
         }
 
+        // Always load unlocked formulas from localStorage on startup
+        try{
+          const savedUnlocked = JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+          if(savedUnlocked.length>0) setUnlockedFormulas(savedUnlocked);
+        }catch(e){}
+
         // ── Handle successful Razorpay redirect ─────────────────────────────
         if(paymentSuccess){
           // Save unlock to localStorage FIRST before anything else
@@ -4702,7 +4710,8 @@ export default function App(){
               }
               window.localStorage.removeItem("chemform_pending_formula");
             }catch(e){}
-            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! It is now highlighted in green."});
+            const pendingName = window.localStorage.getItem("chemform_pending_formula_name")||"the formula";
+            setShowPaymentSuccess({type:"formula", message:"Formula unlocked: "+pendingName+". It is now highlighted in green in the list."});
 
           } else if(rzpType.includes("AI10")){
             try{
