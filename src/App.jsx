@@ -3593,17 +3593,21 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
 
       {tab==="formula"&&(
         <div>
-          {/* Paywall overlay for locked formulas */}
-          {planKey==="free"&&!formula.free&&!unlockedFormulas.includes(formula.id)&&(
-            <FormulaPaywall formulaId={formula.id} formulaName={formula.name} onUnlock={(fid)=>{
-              try{
-                const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
-                if(!ul.includes(fid)) ul.push(fid);
-                window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
-              }catch(e){}
-              setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
-            }}/>
-          )}          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&formula.ingredients.map((ing,i)=>{
+          {(()=>{
+            const isLocked = planKey==="free" && !formula.free && !unlockedFormulas.includes(formula.id);
+            if(isLocked) return(
+              <FormulaPaywall formulaId={formula.id} formulaName={formula.name} onUnlock={(fid)=>{
+                try{
+                  const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+                  if(!ul.includes(fid)) ul.push(fid);
+                  window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
+                }catch(e){}
+                setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
+              }}/>
+            );
+            return null;
+          })()}
+          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(<>{formula.ingredients.map((ing,i)=>{
             const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
             const price=Number(rmPrices[ing.n]??ing.c);
             const contrib=(Number(ing.p)/100)*price;
@@ -5021,3 +5025,6 @@ export default function App(){
     </div>
   );
 }
+          </>)}
+        </div>
+      )}
