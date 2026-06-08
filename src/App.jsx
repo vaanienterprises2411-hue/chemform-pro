@@ -24,13 +24,25 @@ const PLANS = {
 };
 
 const RZP = {
-  annual:    "https://rzp.io/rzp/OsfvTlgL",  // ₹3,999/year
-  formula49: "https://rzp.io/rzp/UGVHhQ7D",  // ₹49 single formula
-  ai99:      "https://rzp.io/rzp/ha2yZxJa",  // ₹99 single AI
-  ai799:     "https://rzp.io/rzp/To6yOYE",   // ₹799 10 AI credits
-  process999:"https://rzp.io/rzp/WtmY3Ca0",  // ₹999 process+equipment
-  custom999: "https://rzp.io/rzp/6afbjT1F",  // ₹999 custom formulation
+  annual:    "https://rzp.io/rzp/eee07Kb8",  // ₹3,999/year
+  formula49: "https://rzp.io/rzp/nTe4zHnS",  // ₹49 single formula
+  ai99:      "https://rzp.io/rzp/d53gGqXj",  // ₹99 single AI
+  ai799:     "https://rzp.io/rzp/BDXJ11Y",   // ₹799 10 AI credits
+  process999:"https://rzp.io/rzp/ndQQj8a",  // ₹999 process+equipment
+  custom999: "https://rzp.io/rzp/tF2PtEb",  // ₹999 custom formulation
 };
+async function fetchUnlocks(email) {
+  try {
+    const r = await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev/check-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    return data.unlocks || {};
+  } catch(e) { return {}; }
+}
+
 
 const INDUSTRIES = [
   { id:"construction", label:"Construction Chemicals", icon:"🏗️" },
@@ -3009,6 +3021,81 @@ function PaymentPortal({onSuccess, onCancel}){
   );
 }
 
+// --- Formula Paywall Component ---
+function FormulaPaywall({formulaId, formulaName, onUnlock}){
+  const [step,setStep]=useState("lock"); // lock | verify | checking
+  const [email,setEmail]=useState("");
+  const [err,setErr]=useState("");
+
+  const handleVerify=async()=>{
+    if(!email.trim()||!email.includes("@")){
+      setErr("Please enter the email you used during payment");
+      return;
+    }
+    setStep("checking");
+    // Check Supabase for payment
+    const unlocks = await fetchUnlocks(email.trim());
+    if(unlocks.allFormulas||unlocks.annual||
+      (unlocks.formulas&&unlocks.formulas.length>0)){
+      onUnlock(formulaId);
+    } else {
+      setStep("verify");
+      setErr("No payment found for this email. If you just paid, wait 2 minutes and try again. Or email info@chemformpro.in");
+    }
+  };
+
+  if(step==="checking") return(
+    <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
+      <div style={{fontSize:30,marginBottom:8}}>⏳</div>
+      <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14}}>Checking payment...</div>
+    </div>
+  );
+
+  if(step==="verify") return(
+    <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
+      <div style={{fontSize:30,marginBottom:8}}>✅</div>
+      <div style={{color:"#f1f5f9",fontWeight:700,fontSize:14,marginBottom:6}}>Already paid? Enter your email to unlock</div>
+      <div style={{color:"#64748b",fontSize:11,marginBottom:12,lineHeight:1.6}}>
+        Enter the email you used during Razorpay payment. We will verify automatically.
+      </div>
+      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" type="email"
+        style={{width:"100%",background:"#060b14",border:"1px solid #334155",borderRadius:9,padding:"10px 14px",color:"#f1f5f9",fontSize:13,outline:"none",boxSizing:"border-box",marginBottom:8}}/>
+      {err&&<div style={{color:"#f87171",fontSize:11,marginBottom:8,textAlign:"left"}}>{err}</div>}
+      <button onClick={handleVerify}
+        style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
+        Verify Payment and Unlock ->
+      </button>
+      <div style={{color:"#334155",fontSize:10}}>
+        Issues? Email <a href="mailto:info@chemformpro.in" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your payment screenshot
+      </div>
+      <button onClick={()=>setStep("lock")} style={{background:"none",border:"none",color:"#334155",fontSize:11,cursor:"pointer",marginTop:8}}>Go back</button>
+    </div>
+  );
+
+  return(
+    <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:20,marginBottom:14,textAlign:"center"}}>
+      <div style={{fontSize:36,marginBottom:10}}>🔒</div>
+      <div style={{color:"#f1f5f9",fontWeight:800,fontSize:15,marginBottom:6}}>Full Formula Locked</div>
+      <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:14}}>
+        Unlock full ingredients, percentages and RM costs for: <b style={{color:"#94a3b8"}}>{formulaName}</b>
+      </div>
+      <button onClick={()=>{window.open(RZP.formula49,"_blank");setStep("verify");}}
+        style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
+        Unlock this formula — Rs.49 ->
+      </button>
+      <button onClick={()=>window.open(RZP.annual,"_blank")}
+        style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
+        All 250+ formulas — Rs.3,999/yr ->
+      </button>
+      <button onClick={()=>setStep("verify")}
+        style={{background:"none",border:"none",color:"#4f9cf9",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>
+        Already paid? Click here to unlock ->
+      </button>
+    </div>
+  );
+}
+
+
 function LoginScreen({onLogin}){
   const [showForm,setShowForm]=useState(false);
   const [name,setName]=useState("");
@@ -3507,25 +3594,16 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
       {tab==="formula"&&(
         <div>
           {/* Paywall overlay for locked formulas */}
-          {planKey==="free"&&!formula.free&&(
-            <div style={{background:"#0a0f1e",border:"1px solid #1e293b",borderRadius:14,padding:24,marginBottom:14,textAlign:"center"}}>
-              <div style={{fontSize:36,marginBottom:10}}>🔒</div>
-              <div style={{color:"#f1f5f9",fontWeight:800,fontSize:15,marginBottom:6}}>Full Formula Locked</div>
-              <div style={{color:"#64748b",fontSize:12,lineHeight:1.7,marginBottom:16}}>
-                Unlock full ingredients, percentages, RM costs and batch calculator for this formula.
-              </div>
-              <button onClick={()=>window.open(RZP.formula49,"_blank")}
-                style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
-                Unlock this formula — ₹49 →
-              </button>
-              <button onClick={()=>window.open(RZP.annual,"_blank")}
-                style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
-                All 250+ formulas — ₹3,999/yr →
-              </button>
-              <div style={{color:"#334155",fontSize:10}}>After payment email info@chemformpro.in with payment ID to activate</div>
-            </div>
-          )}
-          {(planKey==="annual"||formula.free)&&formula.ingredients.map((ing,i)=>{
+          {planKey==="free"&&!formula.free&&!unlockedFormulas.includes(formula.id)&&(
+            <FormulaPaywall formulaId={formula.id} formulaName={formula.name} onUnlock={(fid)=>{
+              try{
+                const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+                if(!ul.includes(fid)) ul.push(fid);
+                window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
+              }catch(e){}
+              setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
+            }}/>
+          )}          {(planKey==="annual"||formula.free)&&formula.ingredients.map((ing,i)=>{
             const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
             const price=Number(rmPrices[ing.n]??ing.c);
             const contrib=(Number(ing.p)/100)*price;
@@ -4037,7 +4115,7 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
               <div key={i} style={{color:"#94a3b8",fontSize:11,marginBottom:3,display:"flex",gap:6}}><span style={{color:"#f59e0b"}}>✓</span>{i}</div>
             ))}
           </div>
-          <button onClick={()=>{window.open("https://rzp.io/rzp/hZ9G7udc","_blank");setPayStep("verify");}}
+          <button onClick={()=>{window.open("https://rzp.io/rzp/tF2PtEb","_blank");setPayStep("verify");}}
             style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",borderRadius:11,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
             Pay ₹499 via Razorpay →
           </button>
@@ -4081,7 +4159,7 @@ function RequestFormula({user, planKey, currency, onUpgrade}){
           }} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",marginBottom:8}}>
             ✅ Verify & Open Google Form
           </button>
-          <button onClick={()=>window.open("https://rzp.io/rzp/hZ9G7udc","_blank")}
+          <button onClick={()=>window.open("https://rzp.io/rzp/tF2PtEb","_blank")}
             style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid #1e293b",borderRadius:10,color:"#475569",fontSize:12,cursor:"pointer",marginBottom:6}}>
             🔗 Reopen Payment Link
           </button>
@@ -4615,6 +4693,10 @@ Regards`);
 export default function App(){
   const [user,setUser]=useState(null);
   const [planKey,setPlanKey]=useState("free");
+  const [unlockedFormulas,setUnlockedFormulas]=useState(()=>{
+    try{return JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");}catch(e){return[];}
+  });
+  const [showPaymentSuccess,setShowPaymentSuccess]=useState(null);
   const [isMobile,setIsMobile]=useState(window.innerWidth<768);
   const [mobileView,setMobileView]=useState("list");
   const [appReady,setAppReady]=useState(false);
@@ -4642,20 +4724,69 @@ export default function App(){
     try{ window.localStorage.setItem("chemform_user", JSON.stringify(u)); }catch(e){}
   },[]);
 
-  // Load saved user on startup
+  // Load saved user + handle Razorpay callback on startup
   useEffect(()=>{
-    try{
-      const saved=window.localStorage.getItem("chemform_user");
-      if(saved){
-        const u=JSON.parse(saved);
+    (async()=>{
+      try{
+        // ── Read Razorpay callback params from URL ──────────────────────────
+        const params = new URLSearchParams(window.location.search);
+        const rzpPaymentId = params.get("razorpay_payment_id");
+        const rzpType = params.get("type") || "";
+        const rzpStatus = params.get("razorpay_payment_link_status");
+
+        // ── Load saved user ─────────────────────────────────────────────────
+        let u = null;
+        try{
+          const saved=window.localStorage.getItem("chemform_user");
+          if(saved){ u=JSON.parse(saved); }
+        }catch(e){}
+
         if(u&&u.name){
           setUser(u);
           setPlanKey(u.plan||"free");
           if(INDUSTRY_PRIORITY[u.industry]?.[0]) setCatId(INDUSTRY_PRIORITY[u.industry][0]);
         }
-      }
-    }catch(e){}
-    setAppReady(true);
+
+        // ── Handle successful Razorpay redirect ─────────────────────────────
+        if(rzpPaymentId && rzpStatus==="paid"){
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          // Apply unlock based on payment type
+          if(rzpType.includes("ANNUAL")){
+            const updated = {...(u||{}), plan:"annual", planPaymentId:rzpPaymentId};
+            setUser(updated); setPlanKey("annual");
+            try{window.localStorage.setItem("chemform_user",JSON.stringify(updated));}catch(e){}
+            setShowPaymentSuccess({type:"annual", message:"Annual plan activated! All 250+ formulas unlocked."});
+
+          } else if(rzpType.includes("FORMULA")){
+            // Unlock all formulas as we can't know which one without formula_id
+            // Store payment ID so worker can verify
+            const ul = JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+            ul.push("paid_"+rzpPaymentId);
+            window.localStorage.setItem("chemform_unlocked", JSON.stringify(ul));
+            setUnlockedFormulas(prev=>[...prev, "paid_"+rzpPaymentId]);
+            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! Go back to your formula."});
+
+          } else if(rzpType.includes("AI10")){
+            setUsage(prev=>({...prev, extraAi:(prev.extraAi||0)+10}));
+            setShowPaymentSuccess({type:"ai", message:"10 AI credits added to your account!"});
+
+          } else if(rzpType.includes("AI-99")){
+            setUsage(prev=>({...prev, extraAi:(prev.extraAi||0)+1}));
+            setShowPaymentSuccess({type:"ai", message:"1 AI credit added to your account!"});
+
+          } else if(rzpType.includes("PROCESS")){
+            setShowPaymentSuccess({type:"process", message:"Process unlocked! Email info@chemformpro.in with formula name to receive the process details."});
+
+          } else if(rzpType.includes("CUSTOM")){
+            setShowPaymentSuccess({type:"custom", message:"Custom formulation request paid! Fill the request form to submit your requirements."});
+          }
+        }
+
+      }catch(e){ console.error(e); }
+      setAppReady(true);
+    })();
   },[]);
 
   const allFormulas=FORMULAS[catId]||[];
@@ -4715,6 +4846,19 @@ export default function App(){
         input,select,button{font-family:inherit}
       `}</style>
 
+      {/* Payment Success Banner */}
+      {showPaymentSuccess&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:9999,background:"linear-gradient(135deg,#34d399,#10b981)",padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:22}}>🎉</span>
+            <span style={{color:"#fff",fontWeight:700,fontSize:14}}>{showPaymentSuccess.message}</span>
+          </div>
+          <button onClick={()=>setShowPaymentSuccess(null)}
+            style={{background:"rgba(255,255,255,0.2)",border:"none",color:"#fff",fontWeight:700,fontSize:12,padding:"6px 14px",borderRadius:8,cursor:"pointer",flexShrink:0}}>
+            Got it ✓
+          </button>
+        </div>
+      )}
       {/* Payment Portal */}
       {paymentPortal&&<PaymentPortal onSuccess={handlePaymentSuccess} onCancel={()=>setPaymentPortal(null)}/>}
 
