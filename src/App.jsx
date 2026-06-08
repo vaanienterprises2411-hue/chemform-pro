@@ -3628,8 +3628,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             );
           })}
-}
-                {{(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
+                {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
             const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
