@@ -3603,7 +3603,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               }catch(e){}
               setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
             }}/>
-          )}          {(planKey==="annual"||formula.free)&&formula.ingredients.map((ing,i)=>{
+          )}          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&formula.ingredients.map((ing,i)=>{
             const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
             const price=Number(rmPrices[ing.n]??ing.c);
             const contrib=(Number(ing.p)/100)*price;
@@ -3624,7 +3624,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
             );
           })}
 
-          {(planKey==="annual"||formula.free)&&(()=>{
+          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
             const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
