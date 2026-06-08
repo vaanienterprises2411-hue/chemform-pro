@@ -3605,9 +3605,10 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
                 setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
               }}/>
             );
-            return null;
-          })()}
-          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(<>{formula.ingredients.map((ing,i)=>{
+            // Unlocked — show full content
+            return(
+              <>
+                {formula.ingredients.map((ing,i)=>{
             const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
             const price=Number(rmPrices[ing.n]??ing.c);
             const contrib=(Number(ing.p)/100)*price;
@@ -3627,8 +3628,8 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             );
           })}
-
-          {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
+}
+                {{(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
             const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
             const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
             return (
@@ -3647,8 +3648,9 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </>
             );
           })()}
-
-          {/* Related Formulas */}
+}
+                <InlineAd/>
+                {{/* Related Formulas */}
           {(()=>{
             const allCatFormulas = Object.values(FORMULAS).flat();
             const related = allCatFormulas
@@ -3711,6 +3713,10 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             ))
           )}
+        </div>}
+              </>
+            );
+          })()}
         </div>
       )}
       {tab==="equipment"&&(planKey==="starter"||planKey==="pro"||planKey==="enterprise")&&(
