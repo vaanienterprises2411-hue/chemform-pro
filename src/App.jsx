@@ -3685,6 +3685,7 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
               </div>
             );
           })()}
+          </>)}
         </div>
       )}
 
