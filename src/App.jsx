@@ -3605,114 +3605,76 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
                 setUnlockedFormulas(prev=>[...new Set([...prev,fid])]);
               }}/>
             );
-            // Unlocked — show full content
             return(
               <>
                 {formula.ingredients.map((ing,i)=>{
-            const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
-            const price=Number(rmPrices[ing.n]??ing.c);
-            const contrib=(Number(ing.p)/100)*price;
-            return(
-              <div key={i} style={{marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                  <span style={{color:"#cbd5e1",fontSize:12,flex:1,marginRight:8}}>{ing.n}</span>
-                  <div style={{display:"flex",gap:8,flexShrink:0}}>
-                    <span style={{color:color,fontSize:12,fontWeight:700}}>{ing.p}%</span>
-                    <span style={{color:"#475569",fontSize:11,minWidth:65,textAlign:"right"}}>{fmtCur(price,currency)}/kg</span>
-                    <span style={{color:"#64748b",fontSize:11,minWidth:60,textAlign:"right"}}>=&nbsp;{fmtCur(contrib,currency)}</span>
-                  </div>
-                </div>
-                <div style={{background:"#1e293b",borderRadius:4,height:4}}>
-                  <div style={{width:`${bw}%`,background:`linear-gradient(90deg,${color},${color}55)`,height:4,borderRadius:4,transition:"width 0.6s"}}/>
-                </div>
-              </div>
-            );
-          })}
-                {(planKey==="annual"||formula.free||unlockedFormulas.includes(formula.id))&&(()=>{
-            const totalPct = formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
-            const pctColor = totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
-            return (
-              <>
-                <div style={{marginTop:12,display:"flex",gap:7}}>
-                  <div style={{flex:1,padding:"10px 14px",background:color+"11",border:`1px solid ${color}33`,borderRadius:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span style={{color:"#64748b",fontSize:12}}>Total RM Cost/kg:</span>
-                    <span style={{color:color,fontWeight:900,fontSize:18}}>{fmtCur(customCostINR,currency)}</span>
-                  </div>
-                  <div style={{padding:"10px 14px",background:pctColor+"11",border:`1px solid ${pctColor}33`,borderRadius:9,textAlign:"center",minWidth:90}}>
-                    <div style={{color:pctColor,fontWeight:900,fontSize:18}}>{totalPct.toFixed(1)}%</div>
-                    <div style={{color:"#475569",fontSize:9}}>Total %</div>
-                  </div>
-                </div>
-                <InlineAd/>
-              </>
-            );
-          })()}
-}
-                <InlineAd/>
-                {{/* Related Formulas */}
-          {(()=>{
-            const allCatFormulas = Object.values(FORMULAS).flat();
-            const related = allCatFormulas
-              .filter(f => f.id !== formula.id && (
-                f.tags?.some(t => formula.tags?.includes(t)) ||
-                Math.abs(f.score - formula.score) < 8
-              ))
-              .slice(0, 4);
-            if(!related.length) return null;
-            return (
-              <div style={{marginTop:18}}>
-                <div style={{color:"#475569",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Related Formulas</div>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {related.map(rf=>{
-                    const rfCost = calcCostPerKg(rf.ingredients);
-                    const rfCol = rf.score>=90?"#34d399":rf.score>=80?"#e8a838":"#f87171";
-                    return(
-                      <div key={rf.id} onClick={()=>{setSelected(rf);setTab("formula");window.scrollTo(0,0);}}
-                        style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 12px",background:"#0a0f1e",borderRadius:10,border:"1px solid #1e293b",cursor:"pointer",transition:"all 0.2s"}}
-                        onMouseEnter={e=>e.currentTarget.style.borderColor=color}
-                        onMouseLeave={e=>e.currentTarget.style.borderColor="#1e293b"}>
-                        <div style={{flex:1,marginRight:8}}>
-                          <div style={{color:"#f1f5f9",fontSize:12,fontWeight:600}}>{rf.name}</div>
-                          <div style={{color:"#475569",fontSize:10,marginTop:2}}>{rf.sub}</div>
-                        </div>
-                        <div style={{textAlign:"right",flexShrink:0}}>
-                          <div style={{color:rfCol,fontWeight:700,fontSize:11}}>{rf.score}/100</div>
-                          <div style={{color:"#64748b",fontSize:10}}>{fmtCur(rfCost,currency)}/kg</div>
+                  const bw=(ing.p/Math.max(...formula.ingredients.map(x=>x.p)))*100;
+                  const price=Number(rmPrices[ing.n]??ing.c);
+                  const contrib=(Number(ing.p)/100)*price;
+                  return(
+                    <div key={i} style={{marginBottom:10}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{color:"#cbd5e1",fontSize:12,flex:1,marginRight:8}}>{ing.n}</span>
+                        <div style={{display:"flex",gap:8,flexShrink:0}}>
+                          <span style={{color:color,fontSize:12,fontWeight:700}}>{ing.p}%</span>
+                          <span style={{color:"#475569",fontSize:11,minWidth:65,textAlign:"right"}}>{fmtCur(price,currency)}/kg</span>
+                          <span style={{color:"#64748b",fontSize:11,minWidth:60,textAlign:"right"}}>=&nbsp;{fmtCur(contrib,currency)}</span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-          </>)}
-        </div>
-      )}
-
-      {tab==="process"&&false&&(
-        <div>
-          <div style={{color:"#94a3b8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:9}}>Manufacturing Process</div>
-          {typeof formula.process === "string" ? (
-            <div>
-              <div style={{color:"#94a3b8",fontSize:13,lineHeight:1.8,padding:"14px 16px",background:"#0a0f1e",borderRadius:12,border:"1px solid #1e293b",marginBottom:12}}>{formula.process}</div>
-              <div style={{background:color+"11",border:`1px solid ${color}33`,borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-                <div>
-                  <div style={{color:color,fontWeight:700,fontSize:12}}>📄 Process Flow Diagram & Detailed SOP</div>
-                  <div style={{color:"#475569",fontSize:11,marginTop:2}}>Get the complete PFD, equipment sizing, and step-by-step manufacturing SOP</div>
-                </div>
-                <button onClick={()=>alert("Quote request sent! Our engineering team will contact you within 24 hours with the Process Flow Diagram.")} style={{background:color,border:"none",color:"#fff",fontWeight:700,fontSize:11,padding:"7px 14px",borderRadius:8,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>Request PFD →</button>
-              </div>
-            </div>
-          ) : (
-            formula.process?.map((step,i)=>(
-              <div key={i} style={{display:"flex",gap:9,marginBottom:8,padding:"9px 12px",background:"#0a0f1e",borderRadius:10,border:"1px solid #1e293b"}}>
-                <div style={{width:19,height:19,borderRadius:"50%",background:color+"22",border:`1px solid ${color}44`,display:"flex",alignItems:"center",justifyContent:"center",color,fontSize:9,fontWeight:800,flexShrink:0}}>{i+1}</div>
-                <div style={{color:"#94a3b8",fontSize:12,lineHeight:1.6}}>{step}</div>
-              </div>
-            ))
-          )}
-        </div>}
+                      <div style={{background:"#1e293b",borderRadius:4,height:4}}>
+                        <div style={{width:`${bw}%`,background:`linear-gradient(90deg,${color},${color}55)`,height:4,borderRadius:4,transition:"width 0.6s"}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+                {(()=>{
+                  const totalPct=formula.ingredients.reduce((s,i)=>s+Number(i.p),0);
+                  const pctColor=totalPct>105?"#f87171":totalPct>=99?"#34d399":"#e8a838";
+                  return(
+                    <div style={{marginTop:12,display:"flex",gap:7}}>
+                      <div style={{flex:1,padding:"10px 14px",background:color+"11",border:`1px solid ${color}33`,borderRadius:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <span style={{color:"#64748b",fontSize:12}}>Total RM Cost/kg:</span>
+                        <span style={{color:color,fontWeight:900,fontSize:18}}>{fmtCur(customCostINR,currency)}</span>
+                      </div>
+                      <div style={{padding:"10px 14px",background:pctColor+"11",border:`1px solid ${pctColor}33`,borderRadius:9,textAlign:"center",minWidth:90}}>
+                        <div style={{color:pctColor,fontWeight:900,fontSize:18}}>{totalPct.toFixed(1)}%</div>
+                        <div style={{color:"#475569",fontSize:9}}>Total %</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+                <InlineAd/>
+                {(()=>{
+                  const allCatFormulas=Object.values(FORMULAS).flat();
+                  const related=allCatFormulas.filter(f=>f.id!==formula.id&&(f.tags?.some(t=>formula.tags?.includes(t))||Math.abs(f.score-formula.score)<8)).slice(0,4);
+                  if(!related.length) return null;
+                  return(
+                    <div style={{marginTop:18}}>
+                      <div style={{color:"#475569",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Related Formulas</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {related.map(rf=>{
+                          const rfCost=calcCostPerKg(rf.ingredients);
+                          const rfCol=rf.score>=90?"#34d399":rf.score>=80?"#e8a838":"#f87171";
+                          return(
+                            <div key={rf.id} onClick={()=>{setSelected(rf);setRightTab("formula");window.scrollTo(0,0);}}
+                              style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 12px",background:"#0a0f1e",borderRadius:10,border:"1px solid #1e293b",cursor:"pointer"}}
+                              onMouseEnter={e=>e.currentTarget.style.borderColor=color}
+                              onMouseLeave={e=>e.currentTarget.style.borderColor="#1e293b"}>
+                              <div style={{flex:1,marginRight:8}}>
+                                <div style={{color:"#f1f5f9",fontSize:12,fontWeight:600}}>{rf.name}</div>
+                                <div style={{color:"#475569",fontSize:10,marginTop:2}}>{rf.sub}</div>
+                              </div>
+                              <div style={{textAlign:"right",flexShrink:0}}>
+                                <div style={{color:rfCol,fontWeight:700,fontSize:11}}>{rf.score}/100</div>
+                                <div style={{color:"#64748b",fontSize:10}}>{fmtCur(rfCost,currency)}/kg</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             );
           })()}
