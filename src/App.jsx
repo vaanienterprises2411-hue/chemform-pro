@@ -3043,18 +3043,8 @@ function FormulaPaywall({formulaId, formulaName, onUnlock}){
         All 250+ formulas — Rs.3,999/yr ->
       </button>
       <div style={{background:"#0d1626",border:"1px solid #1e293b",borderRadius:9,padding:"10px 12px",marginTop:4}}>
-        <div style={{color:"#475569",fontSize:11,marginBottom:6}}>Already paid? Razorpay should have redirected you back automatically.</div>
-        <div style={{color:"#334155",fontSize:10,marginBottom:8}}>If you were not redirected, click below to unlock — or email us with your payment screenshot.</div>
-        <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>onUnlock(formulaId)}
-            style={{padding:"7px 16px",background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#94a3b8",fontWeight:700,fontSize:11,cursor:"pointer"}}>
-            I have paid — Unlock Now
-          </button>
-          <a href="mailto:info@chemformpro.in?subject=Formula Unlock Help"
-            style={{padding:"7px 16px",background:"transparent",border:"1px solid #334155",borderRadius:8,color:"#4f9cf9",fontWeight:700,fontSize:11,cursor:"pointer",textDecoration:"none"}}>
-            Email Us
-          </a>
-        </div>
+        <div style={{color:"#475569",fontSize:11,marginBottom:4}}>Already paid? Razorpay redirects you back automatically after payment.</div>
+        <div style={{color:"#334155",fontSize:10}}>If redirect failed, email <a href="mailto:info@chemformpro.in?subject=Formula Unlock - Payment ID" style={{color:"#4f9cf9",textDecoration:"none"}}>info@chemformpro.in</a> with your Razorpay payment screenshot and we will unlock within 1 hour.</div>
       </div>
     </div>
   );
@@ -4884,10 +4874,11 @@ export default function App(){
             )}
             <div style={{flex:1,overflowY:"auto"}}>
               {allFormulas.filter(f=>!search||(f.name.toLowerCase().includes(search.toLowerCase())||f.sub?.toLowerCase().includes(search.toLowerCase()))).map(f=>{
-                const locked=planKey==="free"&&!f.free;
+                const locked=planKey==="free"&&!f.free&&!unlockedFormulas.includes(f.id);
+                const isUnlocked=!f.free&&unlockedFormulas.includes(f.id);
                 const costINR=f.ingredients.reduce((t,i)=>t+(i.p/100)*i.c,0);
                 return(
-                  <div key={f.id} onClick={()=>handleSelect(f)} style={{background:selected?.id===f.id?"#0f172a":"#0a0f1e",border:`1px solid ${selected?.id===f.id?catColor:"#1e293b"}`,borderRadius:10,padding:"10px 11px",cursor:"pointer",marginBottom:6,opacity:locked?0.5:1,transition:"all 0.2s",boxShadow:selected?.id===f.id?`0 0 12px ${catColor}33`:"none"}}>
+                  <div key={f.id} onClick={()=>handleSelect(f)} style={{background:selected?.id===f.id?"#0f172a":isUnlocked?"#0a1a12":"#0a0f1e",border:`1px solid ${selected?.id===f.id?catColor:isUnlocked?"#34d39966":"#1e293b"}`,borderRadius:10,padding:"10px 11px",cursor:"pointer",marginBottom:6,opacity:locked?0.5:1,transition:"all 0.2s",boxShadow:selected?.id===f.id?`0 0 12px ${catColor}33`:isUnlocked?"0 0 8px #34d39922":"none"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                       <div style={{minWidth:0,marginRight:5}}>
                         <div style={{color:"#f1f5f9",fontWeight:700,fontSize:11,marginBottom:1}}>{locked?"🔒 ":""}{f.name}</div>
