@@ -19,8 +19,9 @@ const calcCostPerKg = (ingredients, customPrices = {}) => {
 };
 
 const PLANS = {
-  free:   { name:"Free",   inr:0,    color:"#64748b", ai:1,   hasFormulas:false },
-  annual: { name:"Annual", inr:3999, color:"#4f9cf9", ai:30,  hasFormulas:true  },
+  free:            { name:"Free",     inr:0,    color:"#64748b", ai:1,   hasFormulas:false },
+  formula_unlocked:{ name:"Unlocked", inr:49,   color:"#34d399", ai:1,   hasFormulas:true  },
+  annual:          { name:"Annual",   inr:3999, color:"#4f9cf9", ai:30,  hasFormulas:true  },
 };
 
 const RZP = {
@@ -3034,7 +3035,11 @@ function FormulaPaywall({formulaId, formulaName, onUnlock}){
         Unlock full ingredients, percentages and RM costs for:<br/>
         <b style={{color:"#94a3b8"}}>{formulaName}</b>
       </div>
-      <button onClick={()=>window.open(RZP.formula49,"_blank")}
+      <button onClick={()=>{
+          // Store which formula is being unlocked BEFORE opening payment
+          try{window.localStorage.setItem("chemform_pending_formula", formulaId);}catch(e){}
+          window.open(RZP.formula49,"_blank");
+        }}
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
         Unlock this formula — Rs.49 ->
       </button>
@@ -3555,6 +3560,8 @@ function FormulaDetail({formula, currency, planKey, usage, onUseQuota, onUpgrade
                 if(onUnlock) onUnlock(fid);
               }}/>
             );
+            const canSee = PLANS[planKey]?.hasFormulas || formula.free || unlockedFormulas.includes(formula.id);
+            if(!canSee) return null;
             return(
               <>
                 {formula.ingredients.map((ing,i)=>{
@@ -4688,13 +4695,18 @@ export default function App(){
             setShowPaymentSuccess({type:"annual", message:"Annual plan activated! All 250+ formulas unlocked."});
 
           } else if(rzpType.includes("FORMULA")){
+            // Rs.49 - unlock only the specific formula that was being viewed
             try{
-              const ul=JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
-              ul.push("paid_"+rzpPaymentId);
-              window.localStorage.setItem("chemform_unlocked",JSON.stringify(ul));
-              setUnlockedFormulas(prev=>[...new Set([...prev,"paid_"+rzpPaymentId])]);
+              const pendingId = window.localStorage.getItem("chemform_pending_formula");
+              const ul = JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
+              if(pendingId && !ul.includes(pendingId)){
+                ul.push(pendingId);
+                window.localStorage.setItem("chemform_unlocked", JSON.stringify(ul));
+                setUnlockedFormulas(prev=>[...new Set([...prev, pendingId])]);
+              }
+              window.localStorage.removeItem("chemform_pending_formula");
             }catch(e){}
-            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! It is now highlighted in green in the list."});
+            setShowPaymentSuccess({type:"formula", message:"Formula unlocked! It is now highlighted in green."});
 
           } else if(rzpType.includes("AI10")){
             try{
@@ -4894,7 +4906,7 @@ export default function App(){
             <div style={{flex:1,overflowY:"auto"}}>
               {allFormulas.filter(f=>!search||(f.name.toLowerCase().includes(search.toLowerCase())||f.sub?.toLowerCase().includes(search.toLowerCase()))).map(f=>{
                 const locked=planKey==="free"&&!f.free&&!unlockedFormulas.includes(f.id);
-                const isUnlocked=!f.free&&unlockedFormulas.includes(f.id);
+                const isUnlocked=!f.free&&(PLANS[planKey]?.hasFormulas||unlockedFormulas.includes(f.id));
                 const costINR=f.ingredients.reduce((t,i)=>t+(i.p/100)*i.c,0);
                 return(
                   <div key={f.id} onClick={()=>handleSelect(f)} style={{background:selected?.id===f.id?"#0f172a":isUnlocked?"#0a1a12":"#0a0f1e",border:`1px solid ${selected?.id===f.id?catColor:isUnlocked?"#34d39966":"#1e293b"}`,borderRadius:10,padding:"10px 11px",cursor:"pointer",marginBottom:6,opacity:locked?0.5:1,transition:"all 0.2s",boxShadow:selected?.id===f.id?`0 0 12px ${catColor}33`:isUnlocked?"0 0 8px #34d39922":"none"}}>
@@ -4938,7 +4950,7 @@ export default function App(){
               }}/>}
               {selected&&rightTab==="optimizer"&&<AIOptimizer formula={selected} planKey={planKey} currency={currency} usage={usage} onUseQuota={useQuota} onUpgrade={handleUpgrade}/>}
               {selected&&rightTab==="batch"&&(
-                planKey==="free"?(
+                (planKey==="free"&&!formula.free&&!unlockedFormulas.includes(formula.id))?(
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 24px",textAlign:"center"}}>
                     <div style={{fontSize:40,marginBottom:12}}>⚖️</div>
                     <div style={{color:"#f1f5f9",fontWeight:700,fontSize:16,marginBottom:8}}>Batch Calculator</div>
