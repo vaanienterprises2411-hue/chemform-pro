@@ -4382,11 +4382,7 @@ function BannerAd({onUpgrade, inline=false}){
     {b:"Flipkart Business",t:"Industrial supplies & packaging at wholesale rates"},
     {b:"Pidilite Industries",t:"Specialty chemicals & raw materials for formulators"},
   ];
-  useEffect(()=>{
-    const _resize=()=>setIsMobile(window.innerWidth<768);
-    window.addEventListener("resize",_resize);
-    return()=>window.removeEventListener("resize",_resize);
-  },[]);
+  
 
   useEffect(()=>{ const t=setInterval(()=>setI(x=>(x+1)%ads.length),5000); return()=>clearInterval(t); },[]);
   const ad = ads[i];
