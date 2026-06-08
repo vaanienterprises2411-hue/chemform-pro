@@ -3036,14 +3036,14 @@ function FormulaPaywall({formulaId, formulaName, onUnlock}){
         <b style={{color:"#94a3b8"}}>{formulaName}</b>
       </div>
       <button onClick={()=>{
-          // Store which formula is being unlocked BEFORE opening payment
+          // Store which formula is being unlocked BEFORE navigating
           try{window.localStorage.setItem("chemform_pending_formula", formulaId);}catch(e){}
-          window.open(RZP.formula49,"_blank");
+          window.location.href = RZP.formula49;
         }}
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#34d399,#10b981)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
         Unlock this formula — Rs.49 ->
       </button>
-      <button onClick={()=>window.open(RZP.annual,"_blank")}
+      <button onClick={()=>{ window.location.href = RZP.annual; }}
         style={{width:"100%",padding:"11px",background:"linear-gradient(135deg,#4f9cf9,#a78bfa)",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:8}}>
         All 250+ formulas — Rs.3,999/yr ->
       </button>
