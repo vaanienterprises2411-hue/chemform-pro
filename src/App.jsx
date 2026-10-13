@@ -32,16 +32,8 @@ const RZP = {
   process999:"https://rzp.io/rzp/ndQQj8a",  // ₹999 process+equipment
   custom999: "https://rzp.io/rzp/tF2PtEb",  // ₹999 custom formulation
 };
-async function fetchUnlocks(email) {
-  try {
-    const r = await fetch("https://nameless-heart-9c9c.vaanienterprises2411.workers.dev/check-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await r.json();
-    return data.unlocks || {};
-  } catch(e) { return {}; }
+async function fetchUnlocks(_email) {
+  return {};
 }
 
 
@@ -3039,6 +3031,7 @@ function FormulaPaywall({formulaId, formulaName, catId, onUnlock}){
           try{
             window.localStorage.setItem("chemform_pending_formula", formulaId);
             window.localStorage.setItem("chemform_pending_formula_name", formulaName);
+            window.localStorage.setItem("chemform_pending_ts", Date.now().toString());
             if(catId) window.localStorage.setItem("chemform_pending_cat", catId);
           }catch(e){}
           window.location.href = RZP.formula49;
@@ -4662,8 +4655,17 @@ export default function App(){
         const rzpType = params.get("type") || "";
         const rzpStatus = params.get("razorpay_payment_link_status");
         const rzpSignature = params.get("razorpay_signature");
-        // Payment Pages use razorpay_signature, Payment Links use razorpay_payment_link_status=paid
-        const paymentSuccess = rzpPaymentId && (rzpStatus==="paid" || rzpSignature);
+
+        // Check if user is returning from Razorpay Payment Page
+        // Payment Pages redirect back without payment params — use time-based trust:
+        // if pending formula was set within last 30 minutes and type param is present, unlock it
+        const pendingFormula = window.localStorage.getItem("chemform_pending_formula");
+        const pendingTs = parseInt(window.localStorage.getItem("chemform_pending_ts")||"0");
+        const withinWindow = pendingFormula && (Date.now() - pendingTs) < 30 * 60 * 1000;
+        const hasRzpParams = rzpPaymentId && rzpPaymentId.startsWith("pay_");
+        const paymentSuccess = rzpType
+          ? (hasRzpParams || withinWindow)  // type param present = coming from Razorpay
+          : false;
 
         // ── Load saved user ─────────────────────────────────────────────────
         let u = null;
@@ -4722,6 +4724,7 @@ export default function App(){
               }
               window.localStorage.removeItem("chemform_pending_formula");
               window.localStorage.removeItem("chemform_pending_formula_name");
+              window.localStorage.removeItem("chemform_pending_ts");
             }catch(e){}
             setShowPaymentSuccess({type:"formula", message:"Formula unlocked! Scroll down to see the full ingredients."});
 
