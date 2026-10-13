@@ -3029,6 +3029,12 @@ function FormulaPaywall({formulaId, formulaName, catId, onUnlock}){
       </div>
       <button onClick={()=>{
           try{
+            // Use cookies so data survives chemformpro.in → www.chemformpro.in redirect
+            const exp = new Date(Date.now() + 30*60*1000).toUTCString();
+            document.cookie = `cfp_formula=${formulaId};expires=${exp};path=/;domain=.chemformpro.in`;
+            document.cookie = `cfp_cat=${catId||""};expires=${exp};path=/;domain=.chemformpro.in`;
+            document.cookie = `cfp_ts=${Date.now()};expires=${exp};path=/;domain=.chemformpro.in`;
+            // Also set localStorage as fallback
             window.localStorage.setItem("chemform_pending_formula", formulaId);
             window.localStorage.setItem("chemform_pending_formula_name", formulaName);
             window.localStorage.setItem("chemform_pending_ts", Date.now().toString());
@@ -4659,8 +4665,13 @@ export default function App(){
         // Check if user is returning from Razorpay Payment Page
         // Payment Pages redirect back without payment params — use time-based trust:
         // if pending formula was set within last 30 minutes and type param is present, unlock it
-        const pendingFormula = window.localStorage.getItem("chemform_pending_formula");
-        const pendingTs = parseInt(window.localStorage.getItem("chemform_pending_ts")||"0");
+        // Read from cookies first (survive cross-domain redirect), fallback to localStorage
+        const getCookie = (name) => {
+          const m = document.cookie.match(new RegExp('(?:^|; )'+name+'=([^;]*)'));
+          return m ? decodeURIComponent(m[1]) : null;
+        };
+        const pendingFormula = getCookie("cfp_formula") || window.localStorage.getItem("chemform_pending_formula");
+        const pendingTs = parseInt(getCookie("cfp_ts") || window.localStorage.getItem("chemform_pending_ts") || "0");
         const withinWindow = pendingFormula && (Date.now() - pendingTs) < 30 * 60 * 1000;
         const hasRzpParams = rzpPaymentId && rzpPaymentId.startsWith("pay_");
         const paymentSuccess = rzpType
@@ -4703,28 +4714,31 @@ export default function App(){
 
           } else if(rzpType.includes("FORMULA")){
             try{
-              const pendingId = window.localStorage.getItem("chemform_pending_formula");
+              const pendingId = pendingFormula;
               const ul = JSON.parse(window.localStorage.getItem("chemform_unlocked")||"[]");
               if(pendingId && !ul.includes(pendingId)){
                 ul.push(pendingId);
                 window.localStorage.setItem("chemform_unlocked", JSON.stringify(ul));
                 setUnlockedFormulas(prev=>[...new Set([...prev, pendingId])]);
-                // Find and select the formula automatically
                 const allFormulas = Object.values(FORMULAS).flat();
                 const found = allFormulas.find(f=>f.id===pendingId);
                 if(found){
-                  // Find its category - use saved cat first, then search
-                  const savedCat = window.localStorage.getItem("chemform_pending_cat");
+                  const savedCat = getCookie("cfp_cat") || window.localStorage.getItem("chemform_pending_cat");
                   const foundCat = savedCat || Object.keys(FORMULAS).find(k=>FORMULAS[k].some(f=>f.id===pendingId));
                   if(foundCat) setCatId(foundCat);
-                  window.localStorage.removeItem("chemform_pending_cat");
                   setSelected(found);
                   setRightTab("formula");
                 }
               }
+              // Clear cookies and localStorage
+              const pastExp = "Thu, 01 Jan 1970 00:00:00 GMT";
+              document.cookie = `cfp_formula=;expires=${pastExp};path=/;domain=.chemformpro.in`;
+              document.cookie = `cfp_cat=;expires=${pastExp};path=/;domain=.chemformpro.in`;
+              document.cookie = `cfp_ts=;expires=${pastExp};path=/;domain=.chemformpro.in`;
               window.localStorage.removeItem("chemform_pending_formula");
               window.localStorage.removeItem("chemform_pending_formula_name");
               window.localStorage.removeItem("chemform_pending_ts");
+              window.localStorage.removeItem("chemform_pending_cat");
             }catch(e){}
             setShowPaymentSuccess({type:"formula", message:"Formula unlocked! Scroll down to see the full ingredients."});
 
