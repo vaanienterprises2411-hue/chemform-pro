@@ -1,5 +1,7 @@
 {
   "rewrites": [
+     { "source": "/formulations", "destination": "/formulations.html" },
+          { "source": "/formulations/:slug", "destination": "/formulations/:slug.html" },
     { "source": "/api/chat", "destination": "/api/chat" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
